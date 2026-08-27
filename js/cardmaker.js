@@ -62,7 +62,7 @@ async function salvarDiretoNoGithub(novoDeck) {
 
         const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
         const body = {
-            message: `Atualização de módulo via Estúdio: ${new Date().toLocaleString('pt-BR')}`,
+            message: `Atualização de módulo: ${new Date().toLocaleString('pt-BR')}`,
             content: contentBase64,
             branch: GITHUB_CONFIG.branch
         };
@@ -79,12 +79,23 @@ async function salvarDiretoNoGithub(novoDeck) {
         });
 
         if (!putResponse.ok) {
+            const errorDetails = await putResponse.json();
+            console.error("Erro detalhado da API do GitHub:", errorDetails);
+
             if (putResponse.status === 401) {
                 localStorage.removeItem("gh_token");
-                throw new Error("Token inválido ou expirado.");
+                throw new Error("Token inválido ou expirado. O token salvo foi removido. Tente salvar novamente.");
             }
-            throw new Error(`Falha no commit: ${putResponse.statusText}`);
+            if (putResponse.status === 404) {
+                throw new Error(`Repositório ou caminho não encontrado. Verifique: owner="${GITHUB_CONFIG.owner}", repo="${GITHUB_CONFIG.repo}", path="${GITHUB_CONFIG.path}"`);
+            }
+            if (putResponse.status === 409) {
+                throw new Error("Conflito de versão (SHA desatualizado). Recarregue a página antes de salvar.");
+            }
+
+            throw new Error(errorDetails.message || `Status HTTP ${putResponse.status}`);
         }
+
         return true;
     } catch (err) {
         alert(`❌ Erro no GitHub: ${err.message}`);
