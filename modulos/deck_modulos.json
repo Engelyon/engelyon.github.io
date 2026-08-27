@@ -1,6 +1,6 @@
 [
   {
-    "id": "MOD_163059",
+    "id": "MOD_754298",
     "nome": "Autocanhão",
     "tipo": "arma",
     "upgraded": false,
@@ -17,49 +17,6 @@
     "mira": {
       "hex0": "+1",
       "hex1_2": "+1",
-      "hex3": "X"
-    }
-  },
-  {
-    "id": "MOD_207507",
-    "nome": "Autocanhão3.0",
-    "tipo": "arma",
-    "upgraded": false,
-    "energia": 1,
-    "usos": 2,
-    "calor": 1,
-    "arte": "ARTE DA ARMA",
-    "arestasHex": [
-      0,
-      1,
-      5
-    ],
-    "dano": 2,
-    "mira": {
-      "hex0": "+1",
-      "hex1_2": "+1",
-      "hex3": "X"
-    }
-  },
-  {
-    "id": "MOD_532211",
-    "nome": "Autocanhão6969",
-    "tipo": "arma",
-    "upgraded": false,
-    "energia": 1,
-    "usos": 2,
-    "calor": 1,
-    "arte": "ARTE DA ARMA",
-    "arestasHex": [
-      0,
-      1,
-      5,
-      4
-    ],
-    "dano": 2,
-    "mira": {
-      "hex0": "+1",
-      "hex1_2": "X",
       "hex3": "X"
     }
   }
