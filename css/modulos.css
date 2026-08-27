@@ -1,0 +1,115 @@
+/* =========================================
+           UI DA GALERIA
+        ========================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+body { background-color: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; height: 100vh; }
+
+/* Barra Superior (Controles e Filtros) */
+.top-nav {
+    background: #161b22; border-bottom: 1px solid #30363d; padding: 15px 30px;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+
+.nav-title { display: flex; align-items: center; gap: 15px; }
+.nav-title h1 { color: #fff; font-size: 20px; margin: 0; }
+
+.filters { display: flex; gap: 15px; align-items: center; background: #0d1117; padding: 10px 20px; border-radius: 8px; border: 1px solid #30363d; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.filter-group label { font-size: 12px; font-weight: bold; color: #8b949e; text-transform: uppercase; }
+
+select {
+    background: #161b22; border: 1px solid #30363d; color: #fff;
+    padding: 6px; border-radius: 4px; outline: none; cursor: pointer;
+}
+
+button {
+    color: #fff; border: none; padding: 10px 15px; border-radius: 4px;
+    font-weight: bold; cursor: pointer; text-transform: uppercase;
+}
+.btn-load { background: #1f6feb; }
+.btn-load:hover { background: #388bfd; }
+
+/* Grade da Galeria */
+.gallery-container {
+    flex-grow: 1; padding: 30px; overflow-y: auto;
+    background-image: radial-gradient(#30363d 1px, transparent 1px); background-size: 20px 20px;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 225px);
+    gap: 30px;
+    justify-content: center;
+}
+
+/* Dica visual para duplo clique */
+.card-wrapper { cursor: pointer; transition: transform 0.2s; }
+.card-wrapper:hover { transform: translateY(-5px); }
+
+/* =========================================
+   MODAL (CARTA EM EVIDÊNCIA)
+========================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+    display: flex; justify-content: center; align-items: center; z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+.modal-content {
+    display: flex; align-items: center; gap: 40px;
+}
+
+/* Truque para escalar a carta sem quebrar o CSS interno dela */
+.modal-card-container { transform: scale(1.5); margin: 50px; }
+
+.modal-actions {
+    display: flex; flex-direction: column; gap: 15px;
+    background: #161b22; padding: 20px; border-radius: 8px; border: 1px solid #30363d;
+}
+.btn-edit { background: #d29922; }
+.btn-edit:hover { background: #e3b341; }
+.btn-delete { background: #da3633; }
+.btn-delete:hover { background: #f85149; }
+.btn-close { background: #484f58; margin-top: 20px; }
+
+/* =========================================
+   CSS DA CARTA (REUTILIZADO)
+========================================= */
+.card { width: 225px; height: 340px; background: linear-gradient(135deg, #161b22, #0d1117); border: 2px solid #30363d; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+.card.upgraded { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 5px 15px rgba(0,0,0,0.8); }
+.card.upgraded .name-plate { border-color: #fbbf24; color: #fbbf24; }
+.top-bar, .status-row, .name-plate, .range-table, .desc-box { position: relative; z-index: 2; }
+.top-bar { display: flex; justify-content: space-between; align-items: flex-start; }
+.badge { background-color: #21262d; border: 2px solid; padding: 4px 8px; font-weight: 900; font-size: 12px; text-align: center; }
+.energy { border-color: #eab308; color: #eab308; border-radius: 4px 4px 8px 8px; }
+.badge-arma { border-color: #ef4444; color: #ef4444; border-radius: 4px 4px 4px 8px; }
+.badge-suporte { border-color: #3b82f6; color: #3b82f6; border-radius: 4px 4px 4px 8px; }
+.badge-propulsao { border-color: #22c55e; color: #22c55e; border-radius: 4px 4px 4px 8px; }
+.art-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; z-index: 1; margin-top: -15px; margin-bottom: -15px; }
+.hex-svg { width: 140px; height: 140px; }
+.art-text { position: absolute; color: #8b949e; text-align: center; font-size: 13px; font-weight: bold; pointer-events: none; z-index: 3; }
+.status-row { display: flex; justify-content: space-between; align-items: flex-end; }
+.stat-box { background: #21262d; border: 2px solid; border-radius: 6px; padding: 6px; text-align: center; width: 58px; }
+.dmg-box { border-color: #f85149; }
+.dmg-val { color: #ff7b72; font-size: 16px; font-weight: 900; }
+.dmg-lbl { color: #f85149; font-size: 9px; font-weight: bold; letter-spacing: 0.5px; }
+.heat-gen-box { border-color: #f97316; }
+.heat-gen-val { color: #fdba74; font-size: 16px; font-weight: 900; }
+.heat-gen-lbl { color: #f97316; font-size: 9px; font-weight: bold; letter-spacing: 0.5px; }
+.uses-track { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 2px; width: 58px; }
+.uses-lbl { color: #38bdf8; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; }
+.uses-slots { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;}
+.uses-slot { width: 14px; height: 14px; border: 2px solid #38bdf8; background: #21262d; border-radius: 2px; }
+.name-plate { background: #21262d; border: 2px solid #30363d; color: #fff; text-align: center; padding: 6px; font-size: 12px; font-weight: 900; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.range-table { border: 2px solid #30363d; border-radius: 6px; overflow: hidden; background: #161b22; }
+.range-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+.grid-cell { padding: 4px 2px; text-align: center; border-right: 2px solid #30363d; }
+.grid-cell:last-child { border-right: none; }
+.cell-top { color: #94a3b8; font-size: 10px; font-weight: bold; margin-bottom: 2px; border-bottom: 1px solid #30363d; padding-bottom: 2px; }
+.cell-bot { font-size: 16px; font-weight: 900; padding-top: 2px; }
+.val-miss { color: #f85149; }
+.val-hit { color: #3fb950; }
+.desc-box { border: 2px solid #30363d; border-radius: 6px; background: #161b22; padding: 10px; color: #94a3b8; font-size: 10px; text-align: center; line-height: 1.4; height: 56px; overflow: hidden;}
+.status-row-utility::before { content: ""; display: block; width: 58px; }
