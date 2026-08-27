@@ -61,7 +61,8 @@ async function obterArquivoGithub(token) {
     };
 }
 
-async function salvarDiretoNoGithub(novoDeck) {
+// --- FUNÇÃO DE COMMIT INTELIGENTE (MERGE SEGURO) ---
+async function salvarDiretoNoGithub(cardData, isEditMode) {
     let token = localStorage.getItem("gh_token");
     if (!token) {
         token = prompt("Cole seu GitHub Personal Access Token:");
@@ -70,22 +71,44 @@ async function salvarDiretoNoGithub(novoDeck) {
     }
 
     try {
+        // 1. Sempre baixa o deck oficial do GitHub no exato momento do clique
+        // (Garante que nunca vai sobrescrever com um array vazio)
         const fileData = await obterArquivoGithub(token);
-        const jsonString = JSON.stringify(novoDeck, null, 2);
+        let deckRemoto = [];
+
+        if (fileData && Array.isArray(fileData.content)) {
+            deckRemoto = fileData.content;
+        }
+
+        // 2. Faz o Merge: Adiciona ou atualiza a carta no deck baixado
+        if (isEditMode) {
+            const index = deckRemoto.findIndex(c => c.id === cardData.id);
+            if (index > -1) {
+                deckRemoto[index] = cardData;
+            } else {
+                deckRemoto.push(cardData);
+            }
+        } else {
+            deckRemoto.push(cardData);
+        }
+
+        // 3. Prepara o JSON atualizado e converte para Base64
+        const jsonString = JSON.stringify(deckRemoto, null, 2);
         const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
         const pathParts = GITHUB_CONFIG.path.split('/').map(p => encodeURIComponent(p)).join('/');
         const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${pathParts}`;
 
         const body = {
-            message: `Atualizacao de modulo via web: ${new Date().toLocaleString('pt-BR')}`,
+            message: `Módulo salvo via Estúdio: ${new Date().toLocaleString('pt-BR')}`,
             content: contentBase64,
             branch: GITHUB_CONFIG.branch
         };
         if (fileData.sha) {
-            body.sha = fileData.sha;
+            body.sha = fileData.sha; // Manda o SHA para autorizar a substituição
         }
 
+        // 4. Envia o PUT (Commit)
         const putResponse = await fetch(url, {
             method: "PUT",
             headers: {
@@ -105,6 +128,8 @@ async function salvarDiretoNoGithub(novoDeck) {
             throw new Error(`HTTP ${putResponse.status}: ${errorDetails.message || putResponse.statusText}`);
         }
 
+        // 5. Atualiza a memória da tela apenas se o commit foi um sucesso
+        deckJSON = deckRemoto;
         return true;
     } catch (err) {
         alert(`❌ Erro no GitHub:\n${err.message}`);
@@ -119,6 +144,7 @@ async function saveCardToJSON() {
     const isEditMode = editData !== null;
     const cartaSendoEditada = isEditMode ? JSON.parse(editData) : null;
 
+    // Validação local para evitar nomes duplicados
     const nomeExiste = deckJSON.some(c => c.nome.toLowerCase() === nomeAtual.toLowerCase() && (!isEditMode || c.id !== cartaSendoEditada.id));
     if (nomeExiste) {
         alert(`❌ Erro: Já existe uma carta chamada "${nomeAtual}" no deck!`);
@@ -133,6 +159,7 @@ async function saveCardToJSON() {
         if (cb.checked) arestasAtivas.push(parseInt(cb.value));
     });
 
+    // Monta o objeto da carta individual
     const cardData = {
         id: isEditMode ? cartaSendoEditada.id : "MOD_" + Date.now().toString().slice(-6),
         nome: nomeAtual,
@@ -156,23 +183,11 @@ async function saveCardToJSON() {
         cardData.descricao = document.getElementById('inp-desc').value;
     }
 
-    if (isEditMode) {
-        const index = deckJSON.findIndex(c => c.id === cartaSendoEditada.id);
-        if (index > -1) {
-            deckJSON[index] = cardData;
-        } else {
-            deckJSON.push(cardData);
-        }
-    } else {
-        deckJSON.push(cardData);
-    }
-
-    refreshOutput();
-
-    // Salva na nuvem
-    const sucesso = await salvarDiretoNoGithub(deckJSON);
+    // Passa apenas a CARTA para a função inteligente fazer o merge no servidor
+    const sucesso = await salvarDiretoNoGithub(cardData, isEditMode);
 
     if (sucesso) {
+        refreshOutput();
         const btn = document.getElementById('btn-save');
         const txtOriginal = btn.innerText;
         btn.innerText = '✅ COMMIT ENVIADO!';
@@ -185,10 +200,6 @@ async function saveCardToJSON() {
                 window.location.href = 'modulos.html';
             }
         }, 1500);
-    } else {
-        // Reverte a array em caso de falha de conexão
-        if(!isEditMode) deckJSON.pop();
-        refreshOutput();
     }
 }
 
