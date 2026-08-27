@@ -4,28 +4,60 @@ const verticesHex = [
 const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e' };
 
 let deckJSON = [];
-let fileHandle = null;
 
-async function abrirArquivoDeck() {
-    try {
-        [fileHandle] = await window.showOpenFilePicker({
-            types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
-        });
+// Carrega automaticamente do LocalStorage (ou busca o arquivo base se for a primeira vez)
+window.addEventListener('DOMContentLoaded', async () => {
+    const localData = localStorage.getItem('deck_modulos_local');
 
-        const file = await fileHandle.getFile();
-        const contents = await file.text();
-
-        if(contents.trim() !== '') {
-            deckJSON = JSON.parse(contents);
-        } else {
+    if (localData) {
+        deckJSON = JSON.parse(localData);
+        refreshOutput();
+    } else {
+        try {
+            const response = await fetch('../decks/deck_modulos.json');
+            if (response.ok) {
+                deckJSON = await response.json();
+                localStorage.setItem('deck_modulos_local', JSON.stringify(deckJSON));
+                refreshOutput();
+            }
+        } catch (err) {
+            console.warn("Iniciando deck vazio.");
             deckJSON = [];
         }
-
-        refreshOutput();
-        alert(`✅ Sucesso! O arquivo "${file.name}" foi carregado e está pronto para receber novas cartas.`);
-    } catch (err) {
-        console.warn("Seleção cancelada ou falha ao abrir:", err);
     }
+
+    document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+        localStorage.removeItem('moduloEmEdicao');
+        window.location.href = 'modulos.html';
+    });
+
+    document.querySelectorAll('.sidebar input, .sidebar select, .sidebar textarea').forEach(input => {
+        input.addEventListener('input', updateCard);
+        input.addEventListener('change', updateCard);
+    });
+
+    document.getElementById('btn-save').addEventListener('click', saveCardToJSON);
+
+    // O botão de carregar manual agora vira um botão de "Baixar JSON" para facilitar o envio para o amigo
+    const btnLoad = document.getElementById('btn-load');
+    if(btnLoad) {
+        btnLoad.innerText = "📥 Baixar JSON Atualizado";
+        btnLoad.removeEventListener('click', abrirArquivoDeck);
+        btnLoad.addEventListener('click', baixarJsonAtualizado);
+    }
+
+    checarModoEdicao();
+    updateCard();
+});
+
+function baixarJsonAtualizado() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deckJSON, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "deck_modulos.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
 }
 
 async function saveCardToJSON() {
@@ -34,14 +66,13 @@ async function saveCardToJSON() {
     const isEditMode = editData !== null;
     const cartaSendoEditada = isEditMode ? JSON.parse(editData) : null;
 
-    // Validação de nome repetido (ignora se for a própria carta sendo editada)
     const nomeExiste = deckJSON.some(c => c.nome.toLowerCase() === nomeAtual.toLowerCase() && (!isEditMode || c.id !== cartaSendoEditada.id));
     if (nomeExiste) {
         alert(`❌ Erro: Já existe uma carta chamada "${nomeAtual}" no deck!`);
         return;
     }
 
-    const querSalvar = confirm(`Salvar módulo "${nomeAtual}" no arquivo?`);
+    const querSalvar = confirm(`Tem certeza que deseja salvar o módulo "${nomeAtual}"?`);
     if (!querSalvar) return;
 
     const arestasAtivas = [];
@@ -72,70 +103,34 @@ async function saveCardToJSON() {
         cardData.descricao = document.getElementById('inp-desc').value;
     }
 
-    // Se for modo edição, tenta carregar o deck base caso esteja vazio,
-    // mas a funcionalidade de gravar exige a seleção do arquivo.
-    if(isEditMode && deckJSON.length === 0) {
-        // Em um ambiente sem servidor, a persistência do fileHandle entre sessões não é garantida.
-        // Para atualizar o arquivo correto, o usuário precisará selecionar o arquivo.
-        alert("Atenção: Como você está em modo edição, selecione o arquivo JSON do deck para atualizar.");
-        try {
-            [fileHandle] = await window.showOpenFilePicker({
-                types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
-            });
-            const file = await fileHandle.getFile();
-            const contents = await file.text();
-            if(contents.trim() !== '') {
-                deckJSON = JSON.parse(contents);
-            }
-        } catch (err) {
-            console.warn("Operação cancelada.", err);
-            return;
-        }
-    }
-
     if (isEditMode) {
         const index = deckJSON.findIndex(c => c.id === cartaSendoEditada.id);
         if (index > -1) {
             deckJSON[index] = cardData;
         } else {
-            deckJSON.push(cardData); // Fallback caso a carta não seja encontrada no deck atual
+            deckJSON.push(cardData);
         }
     } else {
         deckJSON.push(cardData);
     }
 
+    // Salva instantaneamente no LocalStorage do navegador
+    localStorage.setItem('deck_modulos_local', JSON.stringify(deckJSON));
     refreshOutput();
 
-    try {
-        if (!fileHandle) {
-            fileHandle = await window.showSaveFilePicker({
-                suggestedName: 'deck_modulos.json',
-                types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
-            });
+    const btn = document.getElementById('btn-save');
+    const txtOriginal = btn.innerText;
+    btn.innerText = '✅ SALVO COM SUCESSO!';
+    btn.style.background = '#2ea043';
+
+    setTimeout(() => {
+        btn.innerText = txtOriginal;
+        btn.style.background = '';
+        if(isEditMode) {
+            localStorage.removeItem('moduloEmEdicao');
+            window.location.href = 'modulos.html';
         }
-
-        const writable = await fileHandle.createWritable();
-        await writable.write(JSON.stringify(deckJSON, null, 2));
-        await writable.close();
-
-        const btn = document.getElementById('btn-save');
-        const txtOriginal = btn.innerText;
-        btn.innerText = '✅ SALVO NO DISCO!';
-        btn.style.background = '#2ea043';
-        setTimeout(() => {
-            btn.innerText = txtOriginal;
-            btn.style.background = '';
-            if(isEditMode) {
-                localStorage.removeItem('moduloEmEdicao');
-                window.location.href = 'modulos.html';
-            }
-        }, 1500);
-
-    } catch (err) {
-        console.error("Erro ao gravar o arquivo:", err);
-        if(!isEditMode) deckJSON.pop();
-        refreshOutput();
-    }
+    }, 1500);
 }
 
 function checarModoEdicao() {
@@ -146,7 +141,9 @@ function checarModoEdicao() {
         document.getElementById('edit-stripes').style.display = 'block';
         document.getElementById('form-title').innerText = `✏️ Editando: ${carta.nome}`;
         document.getElementById('btn-cancel-edit').style.display = 'block';
-        document.getElementById('btn-load').style.display = 'none';
+
+        const btnLoad = document.getElementById('btn-load');
+        if(btnLoad) btnLoad.style.display = 'none';
 
         document.getElementById('inp-tipo').value = carta.tipo;
         document.getElementById('inp-upgraded').checked = carta.upgraded;
@@ -170,17 +167,10 @@ function checarModoEdicao() {
         }
 
         const btn = document.getElementById('btn-save');
-        btn.innerText = "💾 Atualizar Edição no Arquivo";
+        btn.innerText = "💾 Atualizar Edição";
         btn.style.background = "#d29922";
-
-        updateCard();
     }
 }
-
-document.getElementById('btn-cancel-edit').addEventListener('click', () => {
-    localStorage.removeItem('moduloEmEdicao');
-    window.location.href = 'modulos.html';
-});
 
 function gerarSvgHexagono(tipo) {
     const corAtiva = coresTipo[tipo] || '#f85149';
@@ -269,17 +259,8 @@ function updateCard() {
 
 function refreshOutput() {
     const output = document.getElementById('json-output');
-    output.value = JSON.stringify(deckJSON, null, 2);
-    output.scrollTop = output.scrollHeight;
+    if(output) {
+        output.value = JSON.stringify(deckJSON, null, 2);
+        output.scrollTop = output.scrollHeight;
+    }
 }
-
-document.querySelectorAll('.sidebar input, .sidebar select, .sidebar textarea').forEach(input => {
-    input.addEventListener('input', updateCard);
-    input.addEventListener('change', updateCard);
-});
-
-document.getElementById('btn-save').addEventListener('click', saveCardToJSON);
-document.getElementById('btn-load').addEventListener('click', abrirArquivoDeck);
-
-updateCard();
-checarModoEdicao();

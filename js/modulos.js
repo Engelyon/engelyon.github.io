@@ -1,31 +1,61 @@
-// Configurações Globais
 const verticesHex = [[27.5, 11], [72.5, 11], [95, 50], [72.5, 89], [27.5, 89], [5, 50]];
 const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e' };
 
 let deckCompleto = [];
 let currentActiveCardId = null;
-let fileHandle = null; // AQUI ESTÁ A CORREÇÃO: Variável global para manter o arquivo "na mão"
 
-// 1. CARREGAR JSON
-document.getElementById('btn-load-json').addEventListener('click', async () => {
-    try {
-        // AQUI ESTÁ A CORREÇÃO: Sem o 'const', ele salva na variável global lá de cima
-        [fileHandle] = await window.showOpenFilePicker({
-            types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
-        });
-        const file = await fileHandle.getFile();
-        const contents = await file.text();
+window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('filter-tipo').addEventListener('change', renderizarGaleria);
+    document.getElementById('filter-energia').addEventListener('change', renderizarGaleria);
+    document.getElementById('filter-usos').addEventListener('change', renderizarGaleria);
 
-        if (contents.trim() !== '') {
-            deckCompleto = JSON.parse(contents);
-            renderizarGaleria();
+    document.getElementById('btn-modal-delete').addEventListener('click', deletarCartaModal);
+    document.getElementById('btn-modal-edit').addEventListener('click', editarCartaModal);
+    document.getElementById('btn-modal-close').addEventListener('click', fecharModal);
+
+    const modal = document.getElementById('modal');
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) fecharModal();
+    });
+
+    document.getElementById('gallery-grid').addEventListener('dblclick', abrirModalDuploClique);
+
+    // Esconde ou transforma o botão manual antigo em download
+    const btnLoadJson = document.getElementById('btn-load-json');
+    if(btnLoadJson) {
+        btnLoadJson.innerText = "📥 Baixar JSON Atualizado";
+        btnLoadJson.addEventListener('click', baixarJsonAtualizado);
+    }
+
+    // Carrega do LocalStorage ou do arquivo base
+    const localData = localStorage.getItem('deck_modulos_local');
+    if (localData) {
+        deckCompleto = JSON.parse(localData);
+        renderizarGaleria();
+    } else {
+        try {
+            const response = await fetch('../decks/deck_modulos.json');
+            if (response.ok) {
+                deckCompleto = await response.json();
+                localStorage.setItem('deck_modulos_local', JSON.stringify(deckCompleto));
+                renderizarGaleria();
+            }
+        } catch (err) {
+            console.warn("Nenhum dado encontrado.");
         }
-    } catch (err) {
-        console.warn("Nenhum arquivo selecionado.");
     }
 });
 
-// 2. FUNÇÃO QUE DESENHA O SVG DO HEXÁGONO
+function baixarJsonAtualizado() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deckCompleto, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "deck_modulos.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
 function buildSVG(tipo, arestasHex) {
     const corAtiva = coresTipo[tipo] || '#f85149';
     let svg = `<svg class="hex-svg" viewBox="0 0 100 100">`;
@@ -40,14 +70,12 @@ function buildSVG(tipo, arestasHex) {
     return svg;
 }
 
-// 3. FUNÇÃO QUE GERA O HTML DE UMA CARTA ÚNICA
 function gerarHTMLCarta(cardData) {
     const isUpgraded = cardData.upgraded ? 'upgraded' : '';
     const emojis = { arma: '🔴', suporte: '🔵', propulsao: '🟢' };
-    const labelUsos = cardData.tipo === 'arma' ? 'TIROS' : 'USOS';
     const slotsUsos = '<div class="uses-slot"></div>'.repeat(cardData.usos);
-
     let mioloStatus = '';
+
     if (cardData.tipo === 'arma') {
         const mira = cardData.mira;
         const hitMiss = (val) => (val.includes('X') || val.includes('-')) ? 'val-miss' : 'val-hit';
@@ -94,7 +122,6 @@ function gerarHTMLCarta(cardData) {
         `;
 }
 
-// 4. RENDERIZAÇÃO E FILTROS
 function renderizarGaleria() {
     const grid = document.getElementById('gallery-grid');
     const fTipo = document.getElementById('filter-tipo').value;
@@ -104,90 +131,56 @@ function renderizarGaleria() {
     const deckFiltrado = deckCompleto.filter(carta => {
         let passaTipo = (fTipo === 'all' || carta.tipo === fTipo);
         let passaEnergia = (fEnergia === 'all' || carta.energia === parseInt(fEnergia));
-
         let passaUsos = true;
+
         if (fUsos !== 'all') {
             if (fUsos === '4') passaUsos = (carta.usos >= 4);
             else passaUsos = (carta.usos === parseInt(fUsos));
         }
-
         return passaTipo && passaEnergia && passaUsos;
     });
 
     document.getElementById('count-display').innerText = deckFiltrado.length;
-
     grid.innerHTML = '';
     deckFiltrado.forEach(carta => {
         grid.innerHTML += gerarHTMLCarta(carta);
     });
 }
 
-document.getElementById('filter-tipo').addEventListener('change', renderizarGaleria);
-document.getElementById('filter-energia').addEventListener('change', renderizarGaleria);
-document.getElementById('filter-usos').addEventListener('change', renderizarGaleria);
-
-// 5. LÓGICA DO DUPLO CLIQUE (MODAL)
-const gridContainer = document.getElementById('gallery-grid');
-const modal = document.getElementById('modal');
-const modalSlot = document.getElementById('modal-card-slot');
-
-gridContainer.addEventListener('dblclick', (e) => {
+function abrirModalDuploClique(e) {
     const wrapper = e.target.closest('.card-wrapper');
     if (wrapper) {
         currentActiveCardId = wrapper.getAttribute('data-id');
         const cartaSelecionada = deckCompleto.find(c => c.id === currentActiveCardId);
 
-        modalSlot.innerHTML = gerarHTMLCarta(cartaSelecionada);
-        modal.classList.add('active');
+        document.getElementById('modal-card-slot').innerHTML = gerarHTMLCarta(cartaSelecionada);
+        document.getElementById('modal').classList.add('active');
     }
-});
+}
 
-// --- 6. AÇÃO: DELETAR CARTA ---
-document.getElementById('btn-modal-delete').addEventListener('click', async () => {
+async function deletarCartaModal() {
     const carta = deckCompleto.find(c => c.id === currentActiveCardId);
-
-    const confirmacao = confirm(`🚨 ATENÇÃO!\nTem certeza absoluta que deseja deletar o módulo "${carta.nome}"?\nIsso vai apagar a carta direto do seu arquivo JSON.`);
+    const confirmacao = confirm(`🚨 Tem certeza absoluta que deseja deletar o módulo "${carta.nome}"?`);
 
     if (confirmacao) {
         deckCompleto = deckCompleto.filter(c => c.id !== currentActiveCardId);
 
-        if (fileHandle) {
-            try {
-                const writable = await fileHandle.createWritable();
-                await writable.write(JSON.stringify(deckCompleto, null, 2));
-                await writable.close();
-                alert(`Módulo "${carta.nome}" apagado com sucesso!`);
-            } catch (err) {
-                alert("Erro ao gravar no arquivo. Verifique se ele não está aberto em outro programa.");
-            }
-        } else {
-            alert("Aviso: Como você não carregou um arquivo diretamente do disco nesta sessão, a carta foi apagada apenas da tela.");
-        }
+        // Atualiza o localStorage instantaneamente
+        localStorage.setItem('deck_modulos_local', JSON.stringify(deckCompleto));
 
-        modal.classList.remove('active');
-        currentActiveCardId = null;
+        fecharModal();
         renderizarGaleria();
+        alert(`Módulo "${carta.nome}" apagado com sucesso!`);
     }
-});
-// --- 7. AÇÃO: EDITAR CARTA ---
-document.getElementById('btn-modal-edit').addEventListener('click', () => {
-    // 1. Encontra a carta exata que está aberta no modal
+}
+
+function editarCartaModal() {
     const carta = deckCompleto.find(c => c.id === currentActiveCardId);
-
-    // 2. Salva os dados dela no localStorage para a outra página poder ler
     localStorage.setItem('moduloEmEdicao', JSON.stringify(carta));
-
-    // 3. Redireciona para o estúdio de criação
     window.location.href = 'cardmaker.html';
-});
-// Fechar Modal
-document.getElementById('btn-modal-close').addEventListener('click', () => {
-    modal.classList.remove('active');
-    currentActiveCardId = null;
-});
+}
 
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        modal.classList.remove('active');
-    }
-});
+function fecharModal() {
+    document.getElementById('modal').classList.remove('active');
+    currentActiveCardId = null;
+}

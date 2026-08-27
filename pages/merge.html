@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Sincronizador de Decks</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <script src="../js/merge.js"></script>
+
+    <style>
+        .merge-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #161b22;
+            padding: 30px;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #c9d1d9;
+            text-align: center;
+        }
+        .file-box {
+            margin: 20px 0;
+            padding: 30px;
+            border: 2px dashed #484f58;
+            border-radius: 6px;
+            background: #0d1117;
+        }
+        #btn-download { display: none; margin-top: 20px; }
+        .log-box {
+            margin-top: 20px;
+            text-align: left;
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="merge-container">
+    <h2>Sincronizar Módulos (Merge)</h2>
+    <p>Selecione o arquivo <b>deck_modulos.json</b> que seu amigo enviou para mesclar com o seu banco de dados atual.</p>
+
+    <div class="file-box">
+        <input type="file" id="inp-file" accept=".json">
+    </div>
+
+    <div id="log-container" class="log-box"></div>
+
+    <button id="btn-download" class="btn">📥 Baixar Deck Fundido</button>
+    <br><br>
+    <a href="modulos.html" style="color: #58a6ff;">Voltar para a Galeria</a>
+</div>
+
+</body>
+</html>
