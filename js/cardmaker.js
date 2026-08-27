@@ -1,8 +1,8 @@
 // --- CONFIGURAÇÃO DA API DO GITHUB ---
 const GITHUB_CONFIG = {
-    owner: "SEU_USUARIO_AQUI",                  // Ex: "engelyon"
-    repo: "NOME_DO_REPOSITORIO_AQUI",           // Ex: "meu-jogo-cartas"
-    path: "modulos/deck_modulos.json",          // Caminho no repositório
+    owner: "Engelyon",
+    repo: "engelyon.github.io",
+    path: "modulos/deck_modulos.json",
     branch: "main"
 };
 

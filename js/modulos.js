@@ -1,7 +1,7 @@
 // --- CONFIGURAÇÃO DA API DO GITHUB ---
 const GITHUB_CONFIG = {
-    owner: "SEU_USUARIO_AQUI",
-    repo: "NOME_DO_REPOSITORIO_AQUI",
+    owner: "Engelyon",
+    repo: "engelyon.github.io",
     path: "modulos/deck_modulos.json",
     branch: "main"
 };
