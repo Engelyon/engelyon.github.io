@@ -31,17 +31,34 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // --- FUNÇÕES DA API DO GITHUB (Necessárias para Deletar) ---
 async function obterArquivoGithub(token) {
-    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`;
+    // Adiciona timestamp para impedir que o navegador entregue um SHA antigo do cache
+    const timestamp = new Date().getTime();
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}&_nocache=${timestamp}`;
+
     const response = await fetch(url, {
-        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github.v3+json" }
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
+        }
     });
 
-    if (response.status === 404) return { sha: null, content: [] };
-    if (!response.ok) throw new Error("Erro ao acessar repositório");
+    if (response.status === 404) {
+        return { sha: null, content: [] };
+    }
+
+    if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(`[GET Contents] HTTP ${response.status}: ${errJson.message || response.statusText}`);
+    }
 
     const data = await response.json();
-    const rawContent = decodeURIComponent(escape(atob(data.content)));
-    return { sha: data.sha, content: JSON.parse(rawContent) };
+    const rawContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+    return {
+        sha: data.sha,
+        content: JSON.parse(rawContent)
+    };
 }
 
 async function salvarDiretoNoGithub(novoDeck) {
