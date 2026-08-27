@@ -13,22 +13,45 @@ let deckCompleto = [];
 let currentActiveCardId = null;
 
 // 1. CARREGAMENTO AUTOMÁTICO VIA GITHUB PAGES
+// 1. CARREGAMENTO AUTOMÁTICO (API + Fallback GitHub Pages)
 window.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem("gh_token");
+
+    // Tentativa 1: Busca direto da API do GitHub (tempo real, sem delay de deploy)
+    if (token) {
+        try {
+            const fileData = await obterArquivoGithub(token);
+            if (fileData && fileData.content) {
+                deckCompleto = Array.isArray(fileData.content) ? fileData.content : [];
+                renderizarGaleria();
+                console.log("Deck carregado em tempo real via API do GitHub.");
+                return;
+            }
+        } catch (err) {
+            console.warn("Falha ao buscar via API, tentando arquivo estático...", err);
+        }
+    }
+
+    // Tentativa 2: Fallback buscando o arquivo estático publicado
     try {
-        const response = await fetch(`./modulos/deck_modulos.json?t=${new Date().getTime()}`);
+        const timestamp = Date.now();
+        // Tenta o caminho relativo na raiz ou no diretório atual
+        let response = await fetch(`./modulos/deck_modulos.json?t=${timestamp}`);
+        if (!response.ok) {
+            response = await fetch(`../modulos/deck_modulos.json?t=${timestamp}`);
+        }
+
         if (response.ok) {
             deckCompleto = await response.json();
             renderizarGaleria();
+            console.log("Deck carregado via GitHub Pages.");
+        } else {
+            console.error("Arquivo JSON não encontrado em nenhum dos caminhos.");
         }
     } catch (e) {
-        console.warn("Falha ao carregar deck remotamente.");
+        console.error("Erro ao carregar o JSON:", e);
     }
-
-    // Opcional: Oculta o botão de carregar se ele ainda existir no seu HTML
-    const btnLoad = document.getElementById('btn-load-json');
-    if(btnLoad) btnLoad.style.display = 'none';
 });
-
 // --- FUNÇÕES DA API DO GITHUB (Necessárias para Deletar) ---
 async function obterArquivoGithub(token) {
     const timestamp = Date.now();
