@@ -13,44 +13,41 @@ let deckCompleto = [];
 let currentActiveCardId = null;
 
 // 1. CARREGAMENTO AUTOMÁTICO VIA GITHUB PAGES
-// 1. CARREGAMENTO AUTOMÁTICO (API + Fallback GitHub Pages)
+// Carrega o JSON sempre pegando a versão mais recente e oficial da API
 window.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem("gh_token");
+    let carregouViaAPI = false;
 
-    // Tentativa 1: Busca direto da API do GitHub (tempo real, sem delay de deploy)
+    // Tentativa 1: Busca direto da API do GitHub (Sem delay)
     if (token) {
         try {
             const fileData = await obterArquivoGithub(token);
             if (fileData && fileData.content) {
-                deckCompleto = Array.isArray(fileData.content) ? fileData.content : [];
-                renderizarGaleria();
-                console.log("Deck carregado em tempo real via API do GitHub.");
-                return;
+                deckJSON = Array.isArray(fileData.content) ? fileData.content : [];
+                refreshOutput();
+                console.log("Banco de dados sincronizado em tempo real via API.");
+                carregouViaAPI = true;
             }
         } catch (err) {
-            console.warn("Falha ao buscar via API, tentando arquivo estático...", err);
+            console.warn("Falha ao buscar via API no editor, tentando estático...", err);
         }
     }
 
-    // Tentativa 2: Fallback buscando o arquivo estático publicado
-    try {
-        const timestamp = Date.now();
-        // Tenta o caminho relativo na raiz ou no diretório atual
-        let response = await fetch(`./modulos/deck_modulos.json?t=${timestamp}`);
-        if (!response.ok) {
-            response = await fetch(`../modulos/deck_modulos.json?t=${timestamp}`);
+    // Tentativa 2: Fallback buscando o arquivo do Pages
+    if (!carregouViaAPI) {
+        try {
+            const response = await fetch(`./modulos/deck_modulos.json?t=${new Date().getTime()}`);
+            if (response.ok) {
+                deckJSON = await response.json();
+                refreshOutput();
+            }
+        } catch (e) {
+            console.warn("Nenhum JSON anterior encontrado. Iniciando um novo deck.");
         }
-
-        if (response.ok) {
-            deckCompleto = await response.json();
-            renderizarGaleria();
-            console.log("Deck carregado via GitHub Pages.");
-        } else {
-            console.error("Arquivo JSON não encontrado em nenhum dos caminhos.");
-        }
-    } catch (e) {
-        console.error("Erro ao carregar o JSON:", e);
     }
+
+    checarModoEdicao();
+    updateCard();
 });
 // --- FUNÇÕES DA API DO GITHUB (Necessárias para Deletar) ---
 async function obterArquivoGithub(token) {
