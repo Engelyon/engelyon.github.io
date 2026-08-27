@@ -31,16 +31,16 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // --- FUNÇÕES DA API DO GITHUB ---
 async function obterArquivoGithub(token) {
-    // Adiciona timestamp para impedir que o navegador entregue um SHA antigo do cache
-    const timestamp = new Date().getTime();
-    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}&_nocache=${timestamp}`;
+    const timestamp = Date.now();
+    // Codifica os caminhos para evitar erro de rede por espaços/caracteres
+    const pathParts = GITHUB_CONFIG.path.split('/').map(p => encodeURIComponent(p)).join('/');
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${pathParts}?ref=${GITHUB_CONFIG.branch}&t=${timestamp}`;
 
     const response = await fetch(url, {
+        method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache"
+            "Accept": "application/vnd.github+json"
         }
     });
 
@@ -74,45 +74,40 @@ async function salvarDiretoNoGithub(novoDeck) {
         const jsonString = JSON.stringify(novoDeck, null, 2);
         const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
-        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+        const pathParts = GITHUB_CONFIG.path.split('/').map(p => encodeURIComponent(p)).join('/');
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${pathParts}`;
+
         const body = {
-            message: `Atualização de módulo: ${new Date().toLocaleString('pt-BR')}`,
+            message: `Atualizacao de modulo via web: ${new Date().toLocaleString('pt-BR')}`,
             content: contentBase64,
             branch: GITHUB_CONFIG.branch
         };
-        if (fileData.sha) body.sha = fileData.sha;
+        if (fileData.sha) {
+            body.sha = fileData.sha;
+        }
 
         const putResponse = await fetch(url, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
-                "Accept": "application/vnd.github.v3+json"
+                "Accept": "application/vnd.github+json"
             },
             body: JSON.stringify(body)
         });
 
         if (!putResponse.ok) {
-            const errorDetails = await putResponse.json();
-            console.error("Erro detalhado da API do GitHub:", errorDetails);
-
+            const errorDetails = await putResponse.json().catch(() => ({}));
             if (putResponse.status === 401) {
                 localStorage.removeItem("gh_token");
-                throw new Error("Token inválido ou expirado. O token salvo foi removido. Tente salvar novamente.");
+                throw new Error("Token 401 (Não autorizado). Tente salvar novamente.");
             }
-            if (putResponse.status === 404) {
-                throw new Error(`Repositório ou caminho não encontrado. Verifique: owner="${GITHUB_CONFIG.owner}", repo="${GITHUB_CONFIG.repo}", path="${GITHUB_CONFIG.path}"`);
-            }
-            if (putResponse.status === 409) {
-                throw new Error("Conflito de versão (SHA desatualizado). Recarregue a página antes de salvar.");
-            }
-
-            throw new Error(errorDetails.message || `Status HTTP ${putResponse.status}`);
+            throw new Error(`HTTP ${putResponse.status}: ${errorDetails.message || putResponse.statusText}`);
         }
 
         return true;
     } catch (err) {
-        alert(`❌ Erro no GitHub: ${err.message}`);
+        alert(`❌ Erro no GitHub:\n${err.message}`);
         return false;
     }
 }
