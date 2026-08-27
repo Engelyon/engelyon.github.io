@@ -1,28 +1,7 @@
 [
   {
-    "id": "MOD_053053",
-    "nome": "bumbumzao",
-    "tipo": "arma",
-    "upgraded": false,
-    "energia": 1,
-    "usos": 2,
-    "calor": 1,
-    "arte": "ARTE DA ARMA",
-    "arestasHex": [
-      0,
-      1,
-      5
-    ],
-    "dano": 2,
-    "mira": {
-      "hex0": "+1",
-      "hex1_2": "+1",
-      "hex3": "X"
-    }
-  },
-  {
-    "id": "MOD_060679",
-    "nome": "bumbumzao2",
+    "id": "MOD_276342",
+    "nome": "cu",
     "tipo": "arma",
     "upgraded": false,
     "energia": 1,
