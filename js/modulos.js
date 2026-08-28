@@ -3,12 +3,17 @@ const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e' };
 
 let deckCompleto = [];
 let currentActiveCardId = null;
+let fileHandle = null;
 
-window.addEventListener('DOMContentLoaded', async () => {
+// INICIALIZAÇÃO
+window.addEventListener('DOMContentLoaded', () => {
+    localStorage.removeItem('moduloEmEdicao');
+    // Liga os Filtros
     document.getElementById('filter-tipo').addEventListener('change', renderizarGaleria);
     document.getElementById('filter-energia').addEventListener('change', renderizarGaleria);
     document.getElementById('filter-usos').addEventListener('change', renderizarGaleria);
 
+    // Liga os botões do Modal
     document.getElementById('btn-modal-delete').addEventListener('click', deletarCartaModal);
     document.getElementById('btn-modal-edit').addEventListener('click', editarCartaModal);
     document.getElementById('btn-modal-close').addEventListener('click', fecharModal);
@@ -20,40 +25,31 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('gallery-grid').addEventListener('dblclick', abrirModalDuploClique);
 
-    // Esconde ou transforma o botão manual antigo em download
+    // Liga o botão de abrir arquivo manual
     const btnLoadJson = document.getElementById('btn-load-json');
-    if(btnLoadJson) {
-        btnLoadJson.innerText = "📥 Baixar JSON Atualizado";
-        btnLoadJson.addEventListener('click', baixarJsonAtualizado);
-    }
-
-    // Carrega do LocalStorage ou do arquivo base
-    const localData = localStorage.getItem('deck_modulos_local');
-    if (localData) {
-        deckCompleto = JSON.parse(localData);
-        renderizarGaleria();
-    } else {
-        try {
-            const response = await fetch('../decks/deck_modulos.json');
-            if (response.ok) {
-                deckCompleto = await response.json();
-                localStorage.setItem('deck_modulos_local', JSON.stringify(deckCompleto));
-                renderizarGaleria();
-            }
-        } catch (err) {
-            console.warn("Nenhum dado encontrado.");
-        }
+    if (btnLoadJson) {
+        btnLoadJson.innerText = "📂 Carregar deck_modulos.json";
+        btnLoadJson.addEventListener('click', carregarArquivoManual);
     }
 });
 
-function baixarJsonAtualizado() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deckCompleto, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "deck_modulos.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+// FUNÇÕES DO SISTEMA E GALERIA
+async function carregarArquivoManual() {
+    try {
+        [fileHandle] = await window.showOpenFilePicker({
+            id: 'deck_modulos_id',
+            types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
+        });
+        const file = await fileHandle.getFile();
+        const contents = await file.text();
+
+        if (contents.trim() !== '') {
+            deckCompleto = JSON.parse(contents);
+            renderizarGaleria();
+        }
+    } catch (err) {
+        console.warn("Cancelado.", err);
+    }
 }
 
 function buildSVG(tipo, arestasHex) {
@@ -77,13 +73,13 @@ function gerarHTMLCarta(cardData) {
     let mioloStatus = '';
 
     if (cardData.tipo === 'arma') {
-        const mira = cardData.mira;
+        const mira = cardData.mira || {hex0:'', hex1_2:'', hex3:''};
         const hitMiss = (val) => (val.includes('X') || val.includes('-')) ? 'val-miss' : 'val-hit';
         mioloStatus = `
                 <div class="status-row">
-                    <div class="stat-box dmg-box"><div class="dmg-val">💥 ${cardData.dano}</div><div class="dmg-lbl">DANO</div></div>
+                    <div class="stat-box dmg-box"><div class="dmg-val">💥 ${cardData.dano || 0}</div><div class="dmg-lbl">DANO</div></div>
                     <div class="uses-track"><div class="uses-lbl">TIROS</div><div class="uses-slots">${slotsUsos}</div></div>
-                    <div class="stat-box heat-gen-box"><div class="heat-gen-val">🔥 ${cardData.calor}</div><div class="heat-gen-lbl">CALOR</div></div>
+                    <div class="stat-box heat-gen-box"><div class="heat-gen-val">🔥 ${cardData.calor || 0}</div><div class="heat-gen-lbl">CALOR</div></div>
                 </div>
                 <div class="name-plate">${cardData.nome}</div>
                 <div class="range-table">
@@ -98,10 +94,10 @@ function gerarHTMLCarta(cardData) {
         mioloStatus = `
                 <div class="status-row status-row-utility">
                     <div class="uses-track"><div class="uses-lbl">USOS</div><div class="uses-slots">${slotsUsos}</div></div>
-                    <div class="stat-box heat-gen-box"><div class="heat-gen-val">🔥 ${cardData.calor}</div><div class="heat-gen-lbl">CALOR</div></div>
+                    <div class="stat-box heat-gen-box"><div class="heat-gen-val">🔥 ${cardData.calor || 0}</div><div class="heat-gen-lbl">CALOR</div></div>
                 </div>
                 <div class="name-plate">${cardData.nome}</div>
-                <div class="desc-box">${cardData.descricao}</div>
+                <div class="desc-box">${cardData.descricao || ''}</div>
             `;
     }
 
@@ -109,12 +105,12 @@ function gerarHTMLCarta(cardData) {
             <div class="card-wrapper" data-id="${cardData.id}" title="Duplo-clique para ampliar">
                 <div class="card ${isUpgraded}">
                     <div class="top-bar">
-                        <div class="badge energy">⚡ ${cardData.energia}</div>
-                        <div class="badge badge-${cardData.tipo}">${emojis[cardData.tipo]}</div>
+                        <div class="badge energy">⚡ ${cardData.energia || 0}</div>
+                        <div class="badge badge-${cardData.tipo}">${emojis[cardData.tipo] || '⚪'}</div>
                     </div>
                     <div class="art-container">
-                        ${buildSVG(cardData.tipo, cardData.arestasHex)}
-                        <div class="art-text">${cardData.arte.replace(/\n/g, '<br>')}</div>
+                        ${buildSVG(cardData.tipo, cardData.arestasHex || [])}
+                        <div class="art-text">${(cardData.arte || '').replace(/\n/g, '<br>')}</div>
                     </div>
                     ${mioloStatus}
                 </div>
@@ -160,22 +156,32 @@ function abrirModalDuploClique(e) {
 
 async function deletarCartaModal() {
     const carta = deckCompleto.find(c => c.id === currentActiveCardId);
-    const confirmacao = confirm(`🚨 Tem certeza absoluta que deseja deletar o módulo "${carta.nome}"?`);
+    const confirmacao = confirm(`🚨 Tem certeza absoluta qua vai apagar "${carta.nome}"?`);
 
     if (confirmacao) {
         deckCompleto = deckCompleto.filter(c => c.id !== currentActiveCardId);
 
-        // Atualiza o localStorage instantaneamente
-        localStorage.setItem('deck_modulos_local', JSON.stringify(deckCompleto));
+        if (fileHandle) {
+            try {
+                const writable = await fileHandle.createWritable();
+                await writable.write(JSON.stringify(deckCompleto, null, 2));
+                await writable.close();
+                alert(`Módulo "${carta.nome}" apagado!`);
+            } catch (err) {
+                alert("Erro ao gravar no arquivo. Verifique se ele não está aberto em outro programa.");
+            }
+        } else {
+            alert("⚠️!!! Como você não carregou o arquivo pelo botão azul no topo da página, a carta foi apagada só da tela. Carrega o arquivo primeiro se quiser apagar de vdd.");
+        }
 
         fecharModal();
         renderizarGaleria();
-        alert(`Módulo "${carta.nome}" apagado com sucesso!`);
     }
 }
 
 function editarCartaModal() {
     const carta = deckCompleto.find(c => c.id === currentActiveCardId);
+
     localStorage.setItem('moduloEmEdicao', JSON.stringify(carta));
     window.location.href = 'cardmaker.html';
 }

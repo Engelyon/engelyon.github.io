@@ -4,28 +4,11 @@ const verticesHex = [
 const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e' };
 
 let deckJSON = [];
+let fileHandle = null;
 
-// Carrega automaticamente do LocalStorage (ou busca o arquivo base se for a primeira vez)
-window.addEventListener('DOMContentLoaded', async () => {
-    const localData = localStorage.getItem('deck_modulos_local');
-
-    if (localData) {
-        deckJSON = JSON.parse(localData);
-        refreshOutput();
-    } else {
-        try {
-            const response = await fetch('../decks/deck_modulos.json');
-            if (response.ok) {
-                deckJSON = await response.json();
-                localStorage.setItem('deck_modulos_local', JSON.stringify(deckJSON));
-                refreshOutput();
-            }
-        } catch (err) {
-            console.warn("Iniciando deck vazio.");
-            deckJSON = [];
-        }
-    }
-
+// INICIALIZAÇÃO
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. Liga os botões
     document.getElementById('btn-cancel-edit').addEventListener('click', () => {
         localStorage.removeItem('moduloEmEdicao');
         window.location.href = 'modulos.html';
@@ -38,26 +21,35 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-save').addEventListener('click', saveCardToJSON);
 
-    // O botão de carregar manual agora vira um botão de "Baixar JSON" para facilitar o envio para o amigo
     const btnLoad = document.getElementById('btn-load');
-    if(btnLoad) {
-        btnLoad.innerText = "📥 Baixar JSON Atualizado";
-        btnLoad.removeEventListener('click', abrirArquivoDeck);
-        btnLoad.addEventListener('click', baixarJsonAtualizado);
+    if (btnLoad) {
+        btnLoad.innerText = "📂 Carregar Deck Base";
+        btnLoad.addEventListener('click', abrirArquivoDeck);
     }
 
+    // Puxa a carta para o formulário
     checarModoEdicao();
     updateCard();
 });
 
-function baixarJsonAtualizado() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deckJSON, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "deck_modulos.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+// FUNÇÕES DE DISCO (Substituição Direta)
+async function abrirArquivoDeck() {
+    try {
+        [fileHandle] = await window.showOpenFilePicker({
+            id: 'deck_modulos_id',
+            types: [{ description: 'JSON do Deck', accept: {'application/json': ['.json']} }]
+        });
+        const file = await fileHandle.getFile();
+        const contents = await file.text();
+
+        deckJSON = contents.trim() !== '' ? JSON.parse(contents) : [];
+        refreshOutput();
+        alert(`✅ Deck carregado! Cartas atuais: ${deckJSON.length}`);
+        return true;
+    } catch (err) {
+        console.warn("Cancelado.", err);
+        return false;
+    }
 }
 
 async function saveCardToJSON() {
@@ -66,15 +58,20 @@ async function saveCardToJSON() {
     const isEditMode = editData !== null;
     const cartaSendoEditada = isEditMode ? JSON.parse(editData) : null;
 
+    if (!fileHandle) {
+        alert("🔒Seleciona o arquivo 'deck_modulos.json' original.\nIsso garante que a nova carta vai entrar nele em vez de baixar um arquivo novo.");
+        const abriu = await abrirArquivoDeck();
+        if (!abriu) return;
+    }
+
+    // Validação de nome repetido contra o banco real
     const nomeExiste = deckJSON.some(c => c.nome.toLowerCase() === nomeAtual.toLowerCase() && (!isEditMode || c.id !== cartaSendoEditada.id));
     if (nomeExiste) {
-        alert(`❌ Erro: Já existe uma carta chamada "${nomeAtual}" no deck!`);
+        alert(`❌ Já existe uma carta chamada "${nomeAtual}" no deck`);
         return;
     }
 
-    const querSalvar = confirm(`Tem certeza que deseja salvar o módulo "${nomeAtual}"?`);
-    if (!querSalvar) return;
-
+    // Captura os dados da tela
     const arestasAtivas = [];
     document.querySelectorAll('.inp-edge').forEach((cb) => {
         if (cb.checked) arestasAtivas.push(parseInt(cb.value));
@@ -114,61 +111,86 @@ async function saveCardToJSON() {
         deckJSON.push(cardData);
     }
 
-    // Salva instantaneamente no LocalStorage do navegador
-    localStorage.setItem('deck_modulos_local', JSON.stringify(deckJSON));
     refreshOutput();
 
-    const btn = document.getElementById('btn-save');
-    const txtOriginal = btn.innerText;
-    btn.innerText = '✅ SALVO COM SUCESSO!';
-    btn.style.background = '#2ea043';
+    try {
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(deckJSON, null, 2));
+        await writable.close();
 
-    setTimeout(() => {
-        btn.innerText = txtOriginal;
-        btn.style.background = '';
-        if(isEditMode) {
-            localStorage.removeItem('moduloEmEdicao');
-            window.location.href = 'modulos.html';
-        }
-    }, 1500);
+        const btn = document.getElementById('btn-save');
+        const txtOriginal = btn.innerText;
+        btn.innerText = '✅ SALVO!';
+        btn.style.background = '#2ea043';
+
+        setTimeout(() => {
+            btn.innerText = txtOriginal;
+            btn.style.background = '';
+            if (isEditMode) {
+                localStorage.removeItem('moduloEmEdicao');
+                window.location.href = 'modulos.html';
+            }
+        }, 1500);
+
+    } catch (err) {
+        console.error("Erro ao gravar:", err);
+        alert("Erro ao gravar o arquivo! Ve aí se o arquivo não ta aberto em outro programa.");
+        if (!isEditMode) deckJSON.pop(); // Remove a carta da memória caso dê erro na gravação
+        refreshOutput();
+    }
 }
 
+// FUNÇÕES VISUAIS (À prova de quebras)
 function checarModoEdicao() {
     const editData = localStorage.getItem('moduloEmEdicao');
     if (editData) {
-        const carta = JSON.parse(editData);
+        try {
+            const carta = JSON.parse(editData);
 
-        document.getElementById('edit-stripes').style.display = 'block';
-        document.getElementById('form-title').innerText = `✏️ Editando: ${carta.nome}`;
-        document.getElementById('btn-cancel-edit').style.display = 'block';
+            // Overlay e cabeçalhos
+            const stripes = document.getElementById('edit-stripes');
+            if(stripes) stripes.style.display = 'block';
 
-        const btnLoad = document.getElementById('btn-load');
-        if(btnLoad) btnLoad.style.display = 'none';
+            const formTitle = document.getElementById('form-title');
+            if(formTitle) formTitle.innerText = `✏️ Editando: ${carta.nome}`;
 
-        document.getElementById('inp-tipo').value = carta.tipo;
-        document.getElementById('inp-upgraded').checked = carta.upgraded;
-        document.getElementById('inp-nome').value = carta.nome;
-        document.getElementById('inp-arte').value = carta.arte;
-        document.getElementById('inp-energia').value = carta.energia;
-        document.getElementById('inp-usos').value = carta.usos;
-        document.getElementById('inp-calor').value = carta.calor;
+            const btnCancel = document.getElementById('btn-cancel-edit');
+            if(btnCancel) btnCancel.style.display = 'block';
 
-        document.querySelectorAll('.inp-edge').forEach(cb => {
-            cb.checked = carta.arestasHex.includes(parseInt(cb.value));
-        });
+            const btnLoad = document.getElementById('btn-load');
+            if (btnLoad) btnLoad.style.display = 'none';
 
-        if (carta.tipo === 'arma') {
-            document.getElementById('inp-dano').value = carta.dano;
-            document.getElementById('inp-hex0').value = carta.mira.hex0;
-            document.getElementById('inp-hex1').value = carta.mira.hex1_2;
-            document.getElementById('inp-hex3').value = carta.mira.hex3;
-        } else {
-            document.getElementById('inp-desc').value = carta.descricao;
+            // Preenche os campos protegendo contra dados antigos indefinidos
+            document.getElementById('inp-tipo').value = carta.tipo || 'arma';
+            document.getElementById('inp-upgraded').checked = !!carta.upgraded;
+            document.getElementById('inp-nome').value = carta.nome || '';
+            document.getElementById('inp-arte').value = carta.arte || '';
+            document.getElementById('inp-energia').value = carta.energia !== undefined ? carta.energia : 1;
+            document.getElementById('inp-usos').value = carta.usos !== undefined ? carta.usos : 2;
+            document.getElementById('inp-calor').value = carta.calor !== undefined ? carta.calor : 1;
+
+            const arestas = carta.arestasHex || [];
+            document.querySelectorAll('.inp-edge').forEach(cb => {
+                cb.checked = arestas.includes(parseInt(cb.value));
+            });
+
+            if (carta.tipo === 'arma') {
+                document.getElementById('inp-dano').value = carta.dano || 0;
+                const mira = carta.mira || {hex0: '', hex1_2: '', hex3: ''};
+                document.getElementById('inp-hex0').value = mira.hex0;
+                document.getElementById('inp-hex1').value = mira.hex1_2;
+                document.getElementById('inp-hex3').value = mira.hex3;
+            } else {
+                document.getElementById('inp-desc').value = carta.descricao || '';
+            }
+
+            // Estiliza o botão final
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "💾 Atualizar Edição no Arquivo";
+            btn.style.background = "#d29922";
+        } catch (e) {
+            console.error("Erro ao carregar dados de edição:", e);
         }
-
-        const btn = document.getElementById('btn-save');
-        btn.innerText = "💾 Atualizar Edição";
-        btn.style.background = "#d29922";
     }
 }
 

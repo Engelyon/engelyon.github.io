@@ -1,43 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const inpFile = document.getElementById('inp-file');
+    const inpFile1 = document.getElementById('inp-file-1');
+    const inpFile2 = document.getElementById('inp-file-2');
+    const btnMerge = document.getElementById('btn-merge');
     const logContainer = document.getElementById('log-container');
     const btnDownload = document.getElementById('btn-download');
 
     let deckFundido = [];
 
-    inpFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const lerArquivoJSON = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    resolve(JSON.parse(e.target.result));
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject("Erro de leitura");
+            reader.readAsText(file);
+        });
+    };
 
-        const reader = new FileReader();
+    btnMerge.addEventListener('click', async () => {
+        const file1 = inpFile1.files[0];
+        const file2 = inpFile2.files[0];
 
-        reader.onload = function(event) {
-            try {
-                const deckAmigo = JSON.parse(event.target.result);
-                fazerMerge(deckAmigo);
-            } catch (err) {
-                alert("❌ Erro ao ler o arquivo. Certifique-se de que é um JSON válido.");
-            }
-        };
+        if (!file1 || !file2) {
+            alert("❌ Selecione os DOIS arquivos JSON para poder fazer o Merge!");
+            return;
+        }
 
-        // Lê o conteúdo do arquivo físico selecionado
-        reader.readAsText(file);
+        try {
+            const deckBase = await lerArquivoJSON(file1);
+            const deckNovidades = await lerArquivoJSON(file2);
+
+            fazerMerge(deckBase, deckNovidades);
+        } catch (err) {
+            alert("❌ Erro ao ler os arquivos. Certifique-se de que ambos são JSON válidos.");
+        }
     });
 
-    function fazerMerge(deckAmigo) {
-        // Puxa o seu deck atual (LocalStorage)
-        const localData = localStorage.getItem('deck_modulos_local');
-        const deckLocal = localData ? JSON.parse(localData) : [];
-
+    function fazerMerge(deckBase, deckNovidades) {
         let adicionadas = 0;
         let ignoradas = 0;
         let nomesAdicionados = [];
 
-        // Prepara o deck local para receber as novidades
-        deckFundido = [...deckLocal];
+        deckFundido = [...deckBase];
 
-        deckAmigo.forEach(cartaAmigo => {
-            // Verifica se a carta já existe (cruza pelo ID único ou pelo Nome exato)
+        deckNovidades.forEach(cartaAmigo => {
             const jaExiste = deckFundido.some(c =>
                 c.id === cartaAmigo.id ||
                 c.nome.toLowerCase() === cartaAmigo.nome.toLowerCase()
@@ -52,15 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Atualiza seu navegador com o deck novo imediatamente
-        localStorage.setItem('deck_modulos_local', JSON.stringify(deckFundido));
-
-        // Exibe o relatório do que aconteceu
         logContainer.style.display = 'block';
         logContainer.innerHTML = `
             <h3 style="margin-top:0; color: #2ea043;">✅ Merge Concluído!</h3>
-            <p><b>Cartas no seu deck antes:</b> ${deckLocal.length}</p>
-            <p><b>Novas cartas adicionadas:</b> ${adicionadas}</p>
+            <p><b>Cartas no Deck Base:</b> ${deckBase.length}</p>
+            <p><b>Novas cartas injetadas:</b> ${adicionadas}</p>
             <p style="color:#8b949e;"><b>Cartas repetidas ignoradas:</b> ${ignoradas}</p>
             <p><b>Total no novo deck:</b> ${deckFundido.length}</p>
         `;
@@ -70,11 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><b>Novidades:</b> ${nomesAdicionados.join(', ')}</p>`;
         }
 
-        // Mostra o botão para baixar a versão final
         btnDownload.style.display = 'inline-block';
     }
 
-    // Configura o botão de download
     btnDownload.addEventListener('click', () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deckFundido, null, 2));
         const downloadAnchor = document.createElement('a');

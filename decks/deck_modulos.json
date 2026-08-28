@@ -22,19 +22,19 @@
   },
   {
     "id": "MOD_207507",
-    "nome": "Autocanhão3.0",
+    "nome": "Autocanhão MKII",
     "tipo": "arma",
-    "upgraded": false,
-    "energia": 1,
-    "usos": 2,
-    "calor": 1,
+    "upgraded": true,
+    "energia": 2,
+    "usos": 3,
+    "calor": 2,
     "arte": "ARTE DA ARMA",
     "arestasHex": [
       0,
       1,
       5
     ],
-    "dano": 2,
+    "dano": 3,
     "mira": {
       "hex0": "+1",
       "hex1_2": "+1",
@@ -42,25 +42,59 @@
     }
   },
   {
-    "id": "MOD_532211",
-    "nome": "Autocanhão6969",
-    "tipo": "arma",
+    "id": "MOD_419317",
+    "nome": "Propulsor",
+    "tipo": "propulsao",
     "upgraded": false,
     "energia": 1,
-    "usos": 2,
+    "usos": 4,
     "calor": 1,
+    "arte": "Swoosh",
+    "arestasHex": [
+      0,
+      1,
+      5,
+      2,
+      4,
+      3
+    ],
+    "descricao": "Voar voar"
+  },
+  {
+    "id": "MOD_445970",
+    "nome": "Resfriador",
+    "tipo": "suporte",
+    "upgraded": false,
+    "energia": 2,
+    "usos": 1,
+    "calor": 0,
+    "arte": "Ice ice baby",
+    "arestasHex": [
+      0,
+      1,
+      5,
+      2,
+      4,
+      3
+    ],
+    "descricao": "Gela um calor"
+  },
+  {
+    "id": "MOD_198920",
+    "nome": "Gerador Ruim",
+    "tipo": "propulsao",
+    "upgraded": false,
+    "energia": 3,
+    "usos": 1,
+    "calor": 0,
     "arte": "ARTE DA ARMA",
     "arestasHex": [
       0,
       1,
       5,
+      2,
       4
     ],
-    "dano": 2,
-    "mira": {
-      "hex0": "+1",
-      "hex1_2": "X",
-      "hex3": "X"
-    }
+    "descricao": "Ele é mt ruim, n gera nada"
   }
 ]
