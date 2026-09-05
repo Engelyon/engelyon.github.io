@@ -27,12 +27,11 @@ window.addEventListener('DOMContentLoaded', () => {
         btnLoad.addEventListener('click', abrirArquivoDeck);
     }
 
-    // Puxa a carta para o formulário
     checarModoEdicao();
     updateCard();
 });
 
-// FUNÇÕES DE DISCO (Substituição Direta)
+// FUNÇÕES DE DISCO
 async function abrirArquivoDeck() {
     try {
         [fileHandle] = await window.showOpenFilePicker({
@@ -64,14 +63,12 @@ async function saveCardToJSON() {
         if (!abriu) return;
     }
 
-    // Validação de nome repetido contra o banco real
     const nomeExiste = deckJSON.some(c => c.nome.toLowerCase() === nomeAtual.toLowerCase() && (!isEditMode || c.id !== cartaSendoEditada.id));
     if (nomeExiste) {
         alert(`❌ Já existe uma carta chamada "${nomeAtual}" no deck`);
         return;
     }
 
-    // Captura os dados da tela
     const arestasAtivas = [];
     document.querySelectorAll('.inp-edge').forEach((cb) => {
         if (cb.checked) arestasAtivas.push(parseInt(cb.value));
@@ -140,14 +137,13 @@ async function saveCardToJSON() {
     }
 }
 
-// FUNÇÕES VISUAIS (À prova de quebras)
+// FUNÇÕES VISUAIS
 function checarModoEdicao() {
     const editData = localStorage.getItem('moduloEmEdicao');
     if (editData) {
         try {
             const carta = JSON.parse(editData);
 
-            // Overlay e cabeçalhos
             const stripes = document.getElementById('edit-stripes');
             if(stripes) stripes.style.display = 'block';
 
@@ -160,7 +156,6 @@ function checarModoEdicao() {
             const btnLoad = document.getElementById('btn-load');
             if (btnLoad) btnLoad.style.display = 'none';
 
-            // Preenche os campos protegendo contra dados antigos indefinidos
             document.getElementById('inp-tipo').value = carta.tipo || 'arma';
             document.getElementById('inp-upgraded').checked = !!carta.upgraded;
             document.getElementById('inp-nome').value = carta.nome || '';
@@ -184,7 +179,6 @@ function checarModoEdicao() {
                 document.getElementById('inp-desc').value = carta.descricao || '';
             }
 
-            // Estiliza o botão final
             const btn = document.getElementById('btn-save');
             btn.innerText = "💾 Atualizar Edição no Arquivo";
             btn.style.background = "#d29922";
@@ -217,6 +211,11 @@ function updateCard() {
     const tipo = document.getElementById('inp-tipo').value;
     const isUpgraded = document.getElementById('inp-upgraded').checked;
     const card = document.getElementById('card-preview');
+
+    const hexContainer = document.getElementById('hex-selector-container');
+    if (hexContainer) {
+        hexContainer.className = `hex-grid-selector tipo-${tipo}`;
+    }
 
     isUpgraded ? card.classList.add('upgraded') : card.classList.remove('upgraded');
 
@@ -284,16 +283,14 @@ async function exportarCartaPNG() {
     const nomeRaw = document.getElementById('inp-nome').value.trim() || 'modulo';
     const isUpgraded = document.getElementById('inp-upgraded').checked;
 
-    // Normaliza o nome para arquivo (ex: "Auto Canhão" vira "auto_canhao")
     const nomeFormatado = nomeRaw.toLowerCase().replace(/\s+/g, '_');
     const sufixo = isUpgraded ? '-u' : '';
     const nomeArquivo = `${nomeFormatado}${sufixo}.png`;
 
     try {
-        // Escala 3x gera alta resolução (~300 DPI), ideal para TTS e impressão
         const canvas = await html2canvas(cardElement, {
             scale: 3,
-            backgroundColor: null, // Preserva transparência nos cantos externos
+            backgroundColor: null,
             useCORS: true
         });
 

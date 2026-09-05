@@ -37,7 +37,7 @@
 
     <div class="form-group">
         <label>Nome do Módulo</label>
-        <input type="text" id="inp-nome" value="Autocanhão">
+        <input type="text" id="inp-nome" value="NOME">
     </div>
 
     <div class="form-group">
@@ -62,13 +62,18 @@
 
     <div class="form-group">
         <label>Arestas Ativas do Hexágono</label>
-        <div class="edges-grid">
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="0" checked> Topo (Plano)</label>
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="1" checked> Sup. Direito</label>
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="5" checked> Sup. Esquerdo</label>
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="2"> Inf. Direito</label>
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="4"> Inf. Esquerdo</label>
-            <label class="edge-label"><input type="checkbox" class="inp-edge" value="3"> Base (Plano)</label>
+        <!-- Novo Grid Visual em Formato de Hexágono -->
+        <div class="hex-grid-selector tipo-arma" id="hex-selector-container">
+            <div class="hex-row-center"><label class="custom-cb" title="Topo"><input type="checkbox" class="inp-edge" value="0" checked><span class="cb-mark"></span></label></div>
+            <div class="hex-row-split">
+                <label class="custom-cb" title="Sup. Esquerdo"><input type="checkbox" class="inp-edge" value="5" checked><span class="cb-mark"></span></label>
+                <label class="custom-cb" title="Sup. Direito"><input type="checkbox" class="inp-edge" value="1" checked><span class="cb-mark"></span></label>
+            </div>
+            <div class="hex-row-split">
+                <label class="custom-cb" title="Inf. Esquerdo"><input type="checkbox" class="inp-edge" value="4"><span class="cb-mark"></span></label>
+                <label class="custom-cb" title="Inf. Direito"><input type="checkbox" class="inp-edge" value="2"><span class="cb-mark"></span></label>
+            </div>
+            <div class="hex-row-center"><label class="custom-cb" title="Base"><input type="checkbox" class="inp-edge" value="3"><span class="cb-mark"></span></label></div>
         </div>
     </div>
 
@@ -76,23 +81,23 @@
         <h2 style="margin-top: 10px;">⚔️ Atributos de Combate</h2>
         <div class="form-group">
             <label>💥 Dano</label>
-            <input type="number" id="inp-dano" value="2" min="0" max="9">
+            <input type="number" id="inp-dano" value="0" min="0" max="9">
         </div>
         <div class="row">
-            <div class="form-group"><label>Mira: 0 hex</label><input type="text" id="inp-hex0" value="+1"></div>
-            <div class="form-group"><label>Mira: 1-2 hex</label><input type="text" id="inp-hex1" value="+1"></div>
-            <div class="form-group"><label>Mira: 3+ hex</label><input type="text" id="inp-hex3" value="X"></div>
+            <div class="form-group"><label>Mira: 0 hex</label><input type="text" id="inp-hex0" value="-"></div>
+            <div class="form-group"><label>Mira: 1-2 hex</label><input type="text" id="inp-hex1" value="-"></div>
+            <div class="form-group"><label>Mira: 3+ hex</label><input type="text" id="inp-hex3" value="-"></div>
         </div>
     </div>
 
     <div id="panel-desc" class="hide">
-        <h2 style="margin-top: 10px;">📜 Regras Especiais</h2>
+        <h2 style="margin-top: 10px;">Regras Especiais</h2>
         <div class="form-group">
             <label>Texto da Carta</label>
-            <textarea id="inp-desc" rows="3">Gasta 1 uso para realizar uma ação.</textarea>
+            <textarea id="inp-desc" rows="3">Blablabla.</textarea>
         </div>
     </div>
-    <!-- Botão de Exportar PNG -->
+
     <button id="btn-export-png" type="button" style="background: #8957e5; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; width: 100%;">
         📷 Exportar Imagem (PNG)
     </button>
@@ -120,9 +125,9 @@
 
         <div class="range-table" id="out-tabela">
             <div class="range-grid">
-                <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot val-hit" id="out-hex0">+ 1</div></div>
-                <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot val-hit" id="out-hex1">+ 1</div></div>
-                <div class="grid-cell"><div class="cell-top">3+ hex</div><div class="cell-bot val-miss" id="out-hex3">X</div></div>
+                <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot val-hit" id="out-hex0">-</div></div>
+                <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot val-hit" id="out-hex1">-</div></div>
+                <div class="grid-cell"><div class="cell-top">3+ hex</div><div class="cell-bot val-miss" id="out-hex3">-</div></div>
             </div>
         </div>
 

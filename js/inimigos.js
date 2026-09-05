@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-export-png').addEventListener('click', exportarParaPNG);
 
-    document.querySelectorAll('.editable-stat, .hex-dmg, .enemy-hp span, .enemy-rank span, .action-name-plate').forEach(el => {
+    document.querySelectorAll('.editable-stat, .hex-dmg, .enemy-hp span, .enemy-shield span, .enemy-rank span, .action-name-plate').forEach(el => {
         el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
