@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador de Naves (Cascos)</title>
+    <link rel="stylesheet" href="../css/naves.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="../js/naves.js" defer></script>
+</head>
+<body>
+
+<div class="sidebar">
+    <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+
+    <h2>🚀 Engenharia de Casco</h2>
+    <p class="help-text">
+        Clique nos botões <b>+</b> para expandir a estrutura da nave.<br><br>
+        Ligue/desligue as cores na matriz central para definir quais módulos são aceitos.
+    </p>
+
+    <div class="legend-box">
+        <div class="legend-item"><span class="square-dot color-blue"></span> Suporte</div>
+        <div class="legend-item"><span class="square-dot color-purple"></span> Especial</div>
+        <div class="legend-item"><span class="square-dot color-green"></span> Propulsão</div>
+        <div class="legend-item"><span class="square-dot color-red"></span> Arma</div>
+    </div>
+
+    <button id="btn-export-png" class="btn-export">📷 Exportar Casco (PNG)</button>
+</div>
+
+<div class="workspace" id="workspace">
+    <!-- A grade dinâmica será injetada e ajustada aqui -->
+    <div id="ship-grid" class="ship-grid"></div>
+</div>
+
+</body>
+</html>
