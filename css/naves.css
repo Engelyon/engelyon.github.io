@@ -1,0 +1,98 @@
+body {
+    margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #010409; color: #c9d1d9; display: flex; height: 100vh; overflow: hidden;
+}
+
+.sidebar {
+    width: 320px; background: #161b22; padding: 25px; box-sizing: border-box;
+    border-right: 1px solid #30363d; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; z-index: 100;
+    box-shadow: 5px 0 20px rgba(0,0,0,0.5);
+}
+
+.btn-back { display: inline-block; color: #58a6ff; text-decoration: none; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+h2 { margin: 0; font-size: 18px; color: #fff; border-bottom: 2px solid #30363d; padding-bottom: 10px; text-transform: uppercase; }
+.help-text { font-size: 13px; color: #8b949e; line-height: 1.4; }
+
+.legend-box { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 15px; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: bold; }
+.square-dot { width: 14px; height: 14px; display: inline-block; border: 1px solid #fff; }
+
+.btn-export {
+    background: #8957e5; color: white; padding: 12px; border: none; border-radius: 6px;
+    font-weight: bold; cursor: pointer; text-align: center; margin-top: auto; width: 100%; transition: 0.2s;
+}
+.btn-export:hover { background: #9c73f0; }
+
+.workspace {
+    flex: 1; overflow: auto; display: flex;
+    background-color: #090c10; background-image: radial-gradient(#30363d 1px, transparent 1px); background-size: 40px 40px;
+}
+
+.ship-grid {
+    display: grid; gap: 18px;
+    position: relative; margin: 50px auto;
+    padding: 80px;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
+    flex-shrink: 0;
+}
+
+#hull-svg {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1; pointer-events: none; overflow: visible;
+}
+
+.slot {
+    width: 325px; height: 476px;
+    background: #161b22; position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-sizing: border-box; box-shadow: inset 0 0 0 3px #8b949e;
+    background-image: linear-gradient(rgba(48, 54, 61, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(48, 54, 61, 0.3) 1px, transparent 1px);
+    background-size: 20px 20px; background-position: center center;
+    border-radius: 5px;
+}
+
+.slot-empty {
+    width: 325px; height: 476px;
+    pointer-events: none;
+}
+
+.btn-remove {
+    position: absolute; top: 15px; right: 15px;
+    width: 28px; height: 28px; background: transparent; color: #8b0000;
+    border: 2px solid #8b0000; border-radius: 2px; display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 16px; cursor: pointer; z-index: 10; opacity: 0.6; transition: 0.2s;
+}
+.btn-remove:hover { opacity: 1; background: #8b0000; color: #fff; transform: scale(1.1); }
+
+.colors-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+    background: #0d1117; border: 3px solid #fff;
+    width: 70px; height: 70px; z-index: 5;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+
+.square-btn { width: 100%; height: 100%; cursor: pointer; opacity: 0.15; transition: all 0.2s ease; }
+.square-btn:hover { opacity: 0.6; }
+.square-btn.active { opacity: 1; }
+
+.color-blue { background: #00a2ff; }
+.color-purple { background: #a349a4; }
+.color-green { background: #22b14c; }
+.color-red { background: #ed1c24; }
+
+.btn-add {
+    position: absolute; width: 34px; height: 34px; background: #238636; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
+    border-radius: 6px; cursor: pointer; z-index: 20; border: 2px solid #0d1117;
+    transition: 0.2s; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.btn-add:hover { background: #2ea043; transform: scale(1.2); }
+
+.add-top { top: -45px; left: 50%; margin-left: -17px; }
+.add-bottom { bottom: -45px; left: 50%; margin-left: -17px; }
+.add-left { left: -45px; top: 50%; margin-top: -17px; }
+.add-right { right: -45px; top: 50%; margin-top: -17px; }
+
+.export-mode { filter: none !important; }
+.export-mode .btn-add, .export-mode .btn-remove { display: none !important; }
