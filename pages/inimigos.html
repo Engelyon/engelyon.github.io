@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criador de Inimigos</title>
+  <link rel="stylesheet" href="../css/inimigos.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="../js/inimigos.js" defer></script>
+</head>
+<body>
+
+<div class="sidebar">
+  <a href="../index.html" class="btn-back">⬅ Voltar ao Menu</a>
+
+  <h2>⚙️ Configuração do Inimigo</h2>
+
+  <div class="form-group checkbox-group" style="background: #3d2e00; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px;">
+    <input type="checkbox" id="inp-elite">
+    <label for="inp-elite" style="color: #fbbf24; font-weight: bold; cursor: pointer;">👑 INIMIGO ELITE</label>
+  </div>
+
+  <!-- Controles da Ação 1 -->
+  <div class="action-controls">
+    <div class="act-header">
+      <h3>Ação 1</h3>
+      <label>Ataques:
+        <select class="inp-atk-count" data-act="1">
+          <option value="0">0 (Habilidade)</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+    </div>
+    <div class="hex-grid-selector" id="edges-grid-1">
+      <div class="hex-row-center"><label class="custom-cb" title="Topo"><input type="checkbox" class="edge-cb" data-act="1" value="0" checked><span class="cb-mark"></span></label></div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Sup. Esquerdo"><input type="checkbox" class="edge-cb" data-act="1" value="5" checked><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Sup. Direito"><input type="checkbox" class="edge-cb" data-act="1" value="1" checked><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Inf. Esquerdo"><input type="checkbox" class="edge-cb" data-act="1" value="4"><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Inf. Direito"><input type="checkbox" class="edge-cb" data-act="1" value="2"><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-center"><label class="custom-cb" title="Base"><input type="checkbox" class="edge-cb" data-act="1" value="3"><span class="cb-mark"></span></label></div>
+    </div>
+  </div>
+
+  <!-- Controles da Ação 2 -->
+  <div class="action-controls">
+    <div class="act-header">
+      <h3>Ação 2</h3>
+      <label>Ataques:
+        <select class="inp-atk-count" data-act="2">
+          <option value="0">0 (Habilidade)</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+    </div>
+    <div class="hex-grid-selector" id="edges-grid-2">
+      <div class="hex-row-center"><label class="custom-cb" title="Topo"><input type="checkbox" class="edge-cb" data-act="2" value="0"><span class="cb-mark"></span></label></div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Sup. Esquerdo"><input type="checkbox" class="edge-cb" data-act="2" value="5"><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Sup. Direito"><input type="checkbox" class="edge-cb" data-act="2" value="1" checked><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Inf. Esquerdo"><input type="checkbox" class="edge-cb" data-act="2" value="4"><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Inf. Direito"><input type="checkbox" class="edge-cb" data-act="2" value="2"><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-center"><label class="custom-cb" title="Base"><input type="checkbox" class="edge-cb" data-act="2" value="3" checked><span class="cb-mark"></span></label></div>
+    </div>
+  </div>
+
+  <!-- Controles da Ação 3 -->
+  <div class="action-controls">
+    <div class="act-header">
+      <h3>Ação 3</h3>
+      <label>Ataques:
+        <select class="inp-atk-count" data-act="3">
+          <option value="0" selected>0 (Habilidade)</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+    </div>
+    <div class="hex-grid-selector" id="edges-grid-3">
+      <div class="hex-row-center"><label class="custom-cb" title="Topo"><input type="checkbox" class="edge-cb" data-act="3" value="0"><span class="cb-mark"></span></label></div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Sup. Esquerdo"><input type="checkbox" class="edge-cb" data-act="3" value="5"><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Sup. Direito"><input type="checkbox" class="edge-cb" data-act="3" value="1"><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-split">
+        <label class="custom-cb" title="Inf. Esquerdo"><input type="checkbox" class="edge-cb" data-act="3" value="4" checked><span class="cb-mark"></span></label>
+        <label class="custom-cb" title="Inf. Direito"><input type="checkbox" class="edge-cb" data-act="3" value="2" checked><span class="cb-mark"></span></label>
+      </div>
+      <div class="hex-row-center"><label class="custom-cb" title="Base"><input type="checkbox" class="edge-cb" data-act="3" value="3" checked><span class="cb-mark"></span></label></div>
+    </div>
+  </div>
+
+  <button id="btn-export-png" class="btn-export">📷 Exportar PNG</button>
+</div>
+
+<div class="preview-area">
+  <!-- CARTA DO INIMIGO -->
+  <div class="enemy-card" id="enemy-card">
+
+    <!-- Terço Esquerdo -->
+    <div class="left-panel">
+      <div class="enemy-name" id="out-nome" contenteditable="true" spellcheck="false">INIMIGO GENÉRICO</div>
+      <div class="enemy-art" contenteditable="true" spellcheck="false">ARTE DA<br>NAVE</div>
+      <div class="enemy-hp">HP <span contenteditable="true" spellcheck="false">15</span></div>
+    </div>
+
+    <!-- Dois Terços Direitos -->
+    <div class="right-panel">
+      <div class="enemy-header">
+        <div class="enemy-type" contenteditable="true" spellcheck="false">Mecânico / Caça</div>
+        <div class="enemy-rank">Rank <span contenteditable="true" spellcheck="false">1</span></div>
+      </div>
+
+      <div class="actions-container">
+
+        <!-- AÇÃO 1 -->
+        <div class="action-row">
+          <div class="action-name-plate" contenteditable="true" spellcheck="false">ATAQUE FORTE</div>
+          <div class="action-content">
+            <div class="stat-group">MOV <span class="editable-stat" contenteditable="true">2</span></div>
+
+            <div class="attack-mode" id="atk-mode-1">
+              <div class="hex-wrapper">
+                <div id="svg-act-1" class="svg-layer"></div>
+                <div class="hex-dmg" contenteditable="true">2</div>
+              </div>
+
+              <div class="uses-track">
+                <div class="uses-lbl">ATK</div>
+                <div class="uses-slots" id="slots-act-1"></div>
+              </div>
+
+              <div class="range-table-mini">
+                <div class="range-cell"><div class="cell-top">0 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">1-2 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">3+ hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+              </div>
+            </div>
+
+            <div class="utility-mode hide" id="util-mode-1">
+              <div class="action-desc" contenteditable="true" spellcheck="false">Descrição da habilidade especial.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÇÃO 2 -->
+        <div class="action-row">
+          <div class="action-name-plate" contenteditable="true" spellcheck="false">ATAQUE 2</div>
+          <div class="action-content">
+            <div class="stat-group">MOV <span class="editable-stat" contenteditable="true">1</span></div>
+
+            <div class="attack-mode" id="atk-mode-2">
+              <div class="hex-wrapper">
+                <div id="svg-act-2" class="svg-layer"></div>
+                <div class="hex-dmg" contenteditable="true">3</div>
+              </div>
+
+              <div class="uses-track">
+                <div class="uses-lbl">ATK</div>
+                <div class="uses-slots" id="slots-act-2"></div>
+              </div>
+
+              <div class="range-table-mini">
+                <div class="range-cell"><div class="cell-top">0 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">1-2 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">3+ hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+              </div>
+            </div>
+
+            <div class="utility-mode hide" id="util-mode-2">
+              <div class="action-desc" contenteditable="true" spellcheck="false">Descrição da habilidade especial.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÇÃO 3 -->
+        <div class="action-row">
+          <div class="action-name-plate" contenteditable="true" spellcheck="false">OVERWATCH</div>
+          <div class="action-content">
+            <div class="stat-group">MOV <span class="editable-stat" contenteditable="true">3</span></div>
+
+            <div class="attack-mode" id="atk-mode-3">
+              <div class="hex-wrapper">
+                <div id="svg-act-3" class="svg-layer"></div>
+                <div class="hex-dmg" contenteditable="true">1</div>
+              </div>
+
+              <div class="uses-track">
+                <div class="uses-lbl">ATK</div>
+                <div class="uses-slots" id="slots-act-3"></div>
+              </div>
+
+              <div class="range-table-mini">
+                <div class="range-cell"><div class="cell-top">0 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">1-2 hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+                <div class="range-cell"><div class="cell-top">3+ hex</div><div class="editable-stat" contenteditable="true">-</div></div>
+              </div>
+            </div>
+
+            <div class="utility-mode hide" id="util-mode-3">
+              <div class="action-desc" contenteditable="true" spellcheck="false">Ataca automaticamente se um inimigo entrar na área do ataque 2.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -76,7 +76,7 @@ button {
    CSS DA CARTA
 ========================================= */
 .card {
-    width: 225px; height: 340px; background: linear-gradient(135deg, #161b22, #0d1117);
+    width: 264px; height: 408px; background: linear-gradient(135deg, #161b22, #0d1117);
     border: 2px solid #30363d; border-radius: 8px; padding: 10px;
     display: flex; flex-direction: column; gap: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     transition: all 0.3s ease;

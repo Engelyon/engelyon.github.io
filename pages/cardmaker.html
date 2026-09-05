@@ -6,6 +6,7 @@
     <title>Estúdio de Cartas - Sci-Fi</title>
     <link rel="stylesheet" href="../css/cardmaker.css">
     <script src="../js/cardmaker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -91,6 +92,10 @@
             <textarea id="inp-desc" rows="3">Gasta 1 uso para realizar uma ação.</textarea>
         </div>
     </div>
+    <!-- Botão de Exportar PNG -->
+    <button id="btn-export-png" type="button" style="background: #8957e5; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; width: 100%;">
+        📷 Exportar Imagem (PNG)
+    </button>
 
     <button id="btn-save" class="btn-save">💾 Adicionar e Salvar no JSON</button>
     <textarea id="json-output" readonly placeholder="Abra um deck ou salve para criar um novo..."></textarea>

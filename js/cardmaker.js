@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-save').addEventListener('click', saveCardToJSON);
-
+    document.getElementById('btn-export-png').addEventListener('click', exportarCartaPNG);
     const btnLoad = document.getElementById('btn-load');
     if (btnLoad) {
         btnLoad.innerText = "📂 Carregar Deck Base";
@@ -276,6 +276,34 @@ function updateCard() {
             badge.className = 'badge badge-propulsao';
             badge.innerText = '🟢';
         }
+    }
+}
+
+async function exportarCartaPNG() {
+    const cardElement = document.getElementById('card-preview');
+    const nomeRaw = document.getElementById('inp-nome').value.trim() || 'modulo';
+    const isUpgraded = document.getElementById('inp-upgraded').checked;
+
+    // Normaliza o nome para arquivo (ex: "Auto Canhão" vira "auto_canhao")
+    const nomeFormatado = nomeRaw.toLowerCase().replace(/\s+/g, '_');
+    const sufixo = isUpgraded ? '-u' : '';
+    const nomeArquivo = `${nomeFormatado}${sufixo}.png`;
+
+    try {
+        // Escala 3x gera alta resolução (~300 DPI), ideal para TTS e impressão
+        const canvas = await html2canvas(cardElement, {
+            scale: 3,
+            backgroundColor: null, // Preserva transparência nos cantos externos
+            useCORS: true
+        });
+
+        const link = document.createElement('a');
+        link.download = nomeArquivo;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } catch (err) {
+        console.error("Erro ao gerar PNG:", err);
+        alert("❌ Ocorreu um erro ao exportar a imagem da carta.");
     }
 }
 
