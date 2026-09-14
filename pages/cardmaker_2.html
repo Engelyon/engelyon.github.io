@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estúdio de Cartas - Sci-Fi</title>
+    <link rel="stylesheet" href="../css/cardmaker_2.css">
+    <script src="../js/cardmaker_2.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<a href="../index.html" class="btn-back">⬅ Voltar ao Menu</a>
+
+<div class="workspace">
+    <div class="hud-panel hud-left">
+        <div class="control-group">
+            <label>Raridade</label>
+            <select id="ctrl-raridade">
+                <option value="comum">Comum (Cinza)</option>
+                <option value="incomum">Incomum (Azul)</option>
+                <option value="raro">Raro (Roxo)</option>
+                <option value="unico">Único (Verde Neon)</option>
+            </select>
+        </div>
+        <div class="control-group checkbox-group" style="margin-top: 15px;">
+            <input type="checkbox" id="ctrl-upgraded">
+            <label for="ctrl-upgraded" style="color: #fbbf24;">🌟 UPGRADE</label>
+        </div>
+    </div>
+
+    <div class="card-container">
+        <div class="card" id="card-preview">
+            <div class="top-bar">
+                <div class="badge energy" id="out-box-energia">⚡ <span class="editable-num" id="out-energia" contenteditable="true">1</span></div>
+
+                <div class="weight-display" id="out-box-peso">
+                    <span id="peso-icon" class="clickable-icon" title="Clique para Inverter Positivo/Negativo">🏋️</span>
+                    <span class="editable-num" id="out-peso" contenteditable="true">0</span>
+                </div>
+
+                <div class="badge badge-arma clickable-icon" id="out-badge-tipo" title="Clique para mudar o tipo">🔴</div>
+            </div>
+
+            <div class="art-container" id="out-svg-container">
+            </div>
+
+            <div class="status-row" id="out-status-row">
+                <div class="stat-box dmg-box" id="out-box-dano">
+                    <div class="dmg-val">💥 <span class="editable-num" id="out-dano" contenteditable="true">2</span></div>
+                    <div class="dmg-lbl">DANO</div>
+                </div>
+                <div class="uses-track" id="out-box-usos">
+                    <div class="uses-lbl" id="out-usos-lbl">USOS</div>
+                    <div class="uses-slots" id="out-usos-slots"></div>
+                </div>
+                <div class="stat-box heat-gen-box" id="out-box-calor">
+                    <div class="heat-gen-val">🔥 <span class="editable-num" id="out-calor" contenteditable="true">1</span></div>
+                    <div class="heat-gen-lbl">CALOR</div>
+                </div>
+            </div>
+
+            <div class="name-plate editable-text" id="out-nome" contenteditable="true">NOME DA CARTA</div>
+
+            <div class="range-table hide" id="out-tabela">
+                <div class="range-grid">
+                    <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot editable-text" id="out-hex0" contenteditable="true">-</div></div>
+                    <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot editable-text" id="out-hex1" contenteditable="true">-</div></div>
+                    <div class="grid-cell"><div class="cell-top" id="out-hex3-label">3+ hex</div><div class="cell-bot editable-text" id="out-hex3" contenteditable="true">-</div></div>
+                </div>
+            </div>
+
+            <div class="desc-box editable-text hide" id="out-desc" contenteditable="true">Descrição da carta aqui...</div>
+            <div class="simbolos-box hide" id="out-simbolos"></div>
+        </div>
+    </div>
+
+    <div class="hud-panel hud-right">
+        <div class="control-group">
+            <label>Ato do Jogo</label>
+            <select id="ctrl-ato">
+                <option value="1">Ato 1 (1 Linha)</option>
+                <option value="2">Ato 2 (2 Linhas)</option>
+                <option value="3">Ato 3 (3 Linhas)</option>
+            </select>
+        </div>
+
+        <div class="control-group" style="margin-top: 15px;">
+            <label>Quantidade de Usos</label>
+            <div class="hud-controls">
+                <button class="btn-hud" onclick="chgUsos(-1)">-</button>
+                <span class="hud-val" id="disp-usos">2</span>
+                <button class="btn-hud" onclick="chgUsos(1)">+</button>
+            </div>
+        </div>
+
+        <div class="control-group hide" id="ctrl-group-range3" style="margin-top: 15px;">
+            <label>Tipo de Alcance Longo</label>
+            <select id="ctrl-range3">
+                <option value="3+ hex">3+ hex</option>
+                <option value="3-4 hex">3-4 hex</option>
+                <option value="3-5 hex">3-5 hex</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="hud-bottom">
+    <div class="hud-bottom-inner">
+        <div class="control-group">
+            <label>Modo da Área Inferior (Qualquer Módulo)</label>
+            <select id="ctrl-modo-inf">
+                <option value="texto">✏️ Texto Descritivo</option>
+                <option value="mira">🎯 Tabela de Mira</option>
+                <option value="simbolos">🧩 Símbolos (Energia, Escudo...)</option>
+            </select>
+        </div>
+
+        <div id="panel-simbolos" class="simb-list hide">
+            <div class="simb-row"><span class="simb-icon">⚡ Energia</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('raio', -1)">-</button><span class="hud-val" id="simb-raio">0</span><button class="btn-hud" onclick="chgSimb('raio', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔋 Bateria</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('pilha', -1)">-</button><span class="hud-val" id="simb-pilha">0</span><button class="btn-hud" onclick="chgSimb('pilha', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">💖 Casco</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('coracao', -1)">-</button><span class="hud-val" id="simb-coracao">0</span><button class="btn-hud" onclick="chgSimb('coracao', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🛡️ Escudo</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('escudo', -1)">-</button><span class="hud-val" id="simb-escudo">0</span><button class="btn-hud" onclick="chgSimb('escudo', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔼 Movimento</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('seta', -1)">-</button><span class="hud-val" id="simb-seta">0</span><button class="btn-hud" onclick="chgSimb('seta', 1)">+</button></div></div>
+        </div>
+
+        <button id="btn-export-png" class="btn-export">📷 Exportar Imagem (PNG)</button>
+    </div>
+</div>
+
+</body>
+</html>
