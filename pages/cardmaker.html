@@ -27,6 +27,7 @@
                 <option value="arma">Arma (Vermelho)</option>
                 <option value="suporte">Suporte (Azul)</option>
                 <option value="propulsao">Propulsão (Verde)</option>
+                <option value="especial">Especial (Roxo)</option>
             </select>
         </div>
         <div class="form-group checkbox-group" style="padding-top: 20px;">
@@ -35,9 +36,15 @@
         </div>
     </div>
 
-    <div class="form-group">
-        <label>Nome do Módulo</label>
-        <input type="text" id="inp-nome" value="NOME">
+    <div class="row">
+        <div class="form-group" style="flex: 2;">
+            <label>Nome do Módulo</label>
+            <input type="text" id="inp-nome" value="NOME">
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>⚖️ Peso</label>
+            <input type="number" id="inp-peso" value="0">
+        </div>
     </div>
 
     <div class="form-group">
@@ -48,21 +55,20 @@
     <div class="row">
         <div class="form-group">
             <label>⚡ Energia</label>
-            <input type="number" id="inp-energia" value="1" min="0" max="9">
+            <input type="number" id="inp-energia" value="1" min="0" max="9" title="Zero oculta o atributo">
         </div>
         <div class="form-group">
             <label>🟦 Tiros/Usos</label>
-            <input type="number" id="inp-usos" value="2" min="1" max="6">
+            <input type="number" id="inp-usos" value="2" min="0" max="6" title="Zero oculta o atributo">
         </div>
         <div class="form-group">
             <label>🔥 Calor</label>
-            <input type="number" id="inp-calor" value="1" min="0" max="9">
+            <input type="number" id="inp-calor" value="1" min="0" max="9" title="Zero oculta o atributo">
         </div>
     </div>
 
     <div class="form-group">
         <label>Arestas Ativas do Hexágono</label>
-        <!-- Novo Grid Visual em Formato de Hexágono -->
         <div class="hex-grid-selector tipo-arma" id="hex-selector-container">
             <div class="hex-row-center"><label class="custom-cb" title="Topo"><input type="checkbox" class="inp-edge" value="0" checked><span class="cb-mark"></span></label></div>
             <div class="hex-row-split">
@@ -77,12 +83,23 @@
         </div>
     </div>
 
-    <div id="panel-arma">
-        <h2 style="margin-top: 10px;">⚔️ Atributos de Combate</h2>
+    <div id="panel-dano" class="hide">
+        <h2 style="margin-top: 10px;">⚔️ Combate</h2>
         <div class="form-group">
-            <label>💥 Dano</label>
+            <label>💥 Dano (Zero p/ Ocultar)</label>
             <input type="number" id="inp-dano" value="0" min="0" max="9">
         </div>
+    </div>
+
+    <div class="form-group">
+        <label>Modo do Rodapé da Carta</label>
+        <select id="inp-modo-inf">
+            <option value="auto">Automático (Texto / Mira)</option>
+            <option value="simbolos">Apenas Símbolos (Bateria, Vida...)</option>
+        </select>
+    </div>
+
+    <div id="panel-mira" class="hide">
         <div class="row">
             <div class="form-group"><label>Mira: 0 hex</label><input type="text" id="inp-hex0" value="-"></div>
             <div class="form-group"><label>Mira: 1-2 hex</label><input type="text" id="inp-hex1" value="-"></div>
@@ -91,14 +108,24 @@
     </div>
 
     <div id="panel-desc" class="hide">
-        <h2 style="margin-top: 10px;">Regras Especiais</h2>
         <div class="form-group">
-            <label>Texto da Carta</label>
+            <label>Texto Específico</label>
             <textarea id="inp-desc" rows="3">Blablabla.</textarea>
         </div>
     </div>
 
-    <button id="btn-export-png" type="button" style="background: #8957e5; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; width: 100%;">
+    <div id="panel-simbolos" class="hide">
+        <h2 style="margin-top: 10px;">Quantidade de Símbolos</h2>
+        <div class="simb-list">
+            <div class="simb-row"><span class="simb-icon">⚡ Energia</span><div class="simb-controls"><button class="btn-simb" onclick="chgSimb('raio', -1)">-</button><span class="simb-val" id="simb-raio">0</span><button class="btn-simb" onclick="chgSimb('raio', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔋 Bateria</span><div class="simb-controls"><button class="btn-simb" onclick="chgSimb('pilha', -1)">-</button><span class="simb-val" id="simb-pilha">0</span><button class="btn-simb" onclick="chgSimb('pilha', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">💖 Casco</span><div class="simb-controls"><button class="btn-simb" onclick="chgSimb('coracao', -1)">-</button><span class="simb-val" id="simb-coracao">0</span><button class="btn-simb" onclick="chgSimb('coracao', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🛡️ Escudo</span><div class="simb-controls"><button class="btn-simb" onclick="chgSimb('escudo', -1)">-</button><span class="simb-val" id="simb-escudo">0</span><button class="btn-simb" onclick="chgSimb('escudo', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔼 Movimento</span><div class="simb-controls"><button class="btn-simb" onclick="chgSimb('seta', -1)">-</button><span class="simb-val" id="simb-seta">0</span><button class="btn-simb" onclick="chgSimb('seta', 1)">+</button></div></div>
+        </div>
+    </div>
+
+    <button id="btn-export-png" type="button" style="background: #8957e5; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; width: 100%; margin-top: 15px;">
         📷 Exportar Imagem (PNG)
     </button>
 
@@ -117,8 +144,8 @@
 
         <div class="status-row" id="out-status-row">
             <div class="stat-box dmg-box" id="out-box-dano"><div class="dmg-val" id="out-dano">💥 2</div><div class="dmg-lbl">DANO</div></div>
-            <div class="uses-track"><div class="uses-lbl" id="out-usos-lbl">TIROS</div><div class="uses-slots" id="out-usos-slots"></div></div>
-            <div class="stat-box heat-gen-box"><div class="heat-gen-val" id="out-calor">🔥 1</div><div class="heat-gen-lbl">CALOR</div></div>
+            <div class="uses-track" id="out-box-usos"><div class="uses-lbl" id="out-usos-lbl">TIROS</div><div class="uses-slots" id="out-usos-slots"></div></div>
+            <div class="stat-box heat-gen-box" id="out-box-calor"><div class="heat-gen-val" id="out-calor">🔥 1</div><div class="heat-gen-lbl">CALOR</div></div>
         </div>
 
         <div class="name-plate" id="out-nome">AUTOCANHÃO</div>
@@ -132,6 +159,8 @@
         </div>
 
         <div class="desc-box hide" id="out-desc"></div>
+
+        <div class="simbolos-box hide" id="out-simbolos"></div>
     </div>
 </div>
 </body>

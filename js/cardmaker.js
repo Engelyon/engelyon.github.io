@@ -1,14 +1,13 @@
 const verticesHex = [
     [27.5, 11], [72.5, 11], [95, 50], [72.5, 89], [27.5, 89], [5, 50]
 ];
-const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e' };
+const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e', especial: '#a855f7' };
+const dicionarioSimbolos = { raio: '⚡', pilha: '🔋', coracao: '💖', escudo: '🛡️', seta: '🔼' };
 
 let deckJSON = [];
 let fileHandle = null;
 
-// INICIALIZAÇÃO
 window.addEventListener('DOMContentLoaded', () => {
-    // 1. Liga os botões
     document.getElementById('btn-cancel-edit').addEventListener('click', () => {
         localStorage.removeItem('moduloEmEdicao');
         window.location.href = 'modulos.html';
@@ -31,7 +30,15 @@ window.addEventListener('DOMContentLoaded', () => {
     updateCard();
 });
 
-// FUNÇÕES DE DISCO
+window.chgSimb = function(id, delta) {
+    const el = document.getElementById(`simb-${id}`);
+    let val = parseInt(el.innerText) + delta;
+    if(val < 0) val = 0;
+    if(val > 99) val = 99;
+    el.innerText = val;
+    updateCard();
+};
+
 async function abrirArquivoDeck() {
     try {
         [fileHandle] = await window.showOpenFilePicker({
@@ -58,7 +65,7 @@ async function saveCardToJSON() {
     const cartaSendoEditada = isEditMode ? JSON.parse(editData) : null;
 
     if (!fileHandle) {
-        alert("🔒Seleciona o arquivo 'deck_modulos.json' original.\nIsso garante que a nova carta vai entrar nele em vez de baixar um arquivo novo.");
+        alert("🔒 Selecione o arquivo 'deck_modulos.json' original.");
         const abriu = await abrirArquivoDeck();
         if (!abriu) return;
     }
@@ -79,15 +86,27 @@ async function saveCardToJSON() {
         nome: nomeAtual,
         tipo: document.getElementById('inp-tipo').value,
         upgraded: document.getElementById('inp-upgraded').checked,
-        energia: parseInt(document.getElementById('inp-energia').value),
-        usos: parseInt(document.getElementById('inp-usos').value),
-        calor: parseInt(document.getElementById('inp-calor').value),
+        peso: parseInt(document.getElementById('inp-peso').value) || 0,
+        energia: parseInt(document.getElementById('inp-energia').value) || 0,
+        usos: parseInt(document.getElementById('inp-usos').value) || 0,
+        calor: parseInt(document.getElementById('inp-calor').value) || 0,
         arte: document.getElementById('inp-arte').value,
-        arestasHex: arestasAtivas
+        arestasHex: arestasAtivas,
+        modo_inferior: document.getElementById('inp-modo-inf').value
     };
 
+    if (cardData.modo_inferior === 'simbolos') {
+        cardData.simbolos = {
+            raio: parseInt(document.getElementById('simb-raio').innerText) || 0,
+            pilha: parseInt(document.getElementById('simb-pilha').innerText) || 0,
+            coracao: parseInt(document.getElementById('simb-coracao').innerText) || 0,
+            escudo: parseInt(document.getElementById('simb-escudo').innerText) || 0,
+            seta: parseInt(document.getElementById('simb-seta').innerText) || 0
+        };
+    }
+
     if (cardData.tipo === 'arma') {
-        cardData.dano = parseInt(document.getElementById('inp-dano').value);
+        cardData.dano = parseInt(document.getElementById('inp-dano').value) || 0;
         cardData.mira = {
             hex0: document.getElementById('inp-hex0').value,
             hex1_2: document.getElementById('inp-hex1').value,
@@ -99,11 +118,8 @@ async function saveCardToJSON() {
 
     if (isEditMode) {
         const index = deckJSON.findIndex(c => c.id === cartaSendoEditada.id);
-        if (index > -1) {
-            deckJSON[index] = cardData;
-        } else {
-            deckJSON.push(cardData);
-        }
+        if (index > -1) deckJSON[index] = cardData;
+        else deckJSON.push(cardData);
     } else {
         deckJSON.push(cardData);
     }
@@ -132,12 +148,11 @@ async function saveCardToJSON() {
     } catch (err) {
         console.error("Erro ao gravar:", err);
         alert("Erro ao gravar o arquivo! Ve aí se o arquivo não ta aberto em outro programa.");
-        if (!isEditMode) deckJSON.pop(); // Remove a carta da memória caso dê erro na gravação
+        if (!isEditMode) deckJSON.pop();
         refreshOutput();
     }
 }
 
-// FUNÇÕES VISUAIS
 function checarModoEdicao() {
     const editData = localStorage.getItem('moduloEmEdicao');
     if (editData) {
@@ -159,10 +174,19 @@ function checarModoEdicao() {
             document.getElementById('inp-tipo').value = carta.tipo || 'arma';
             document.getElementById('inp-upgraded').checked = !!carta.upgraded;
             document.getElementById('inp-nome').value = carta.nome || '';
+            document.getElementById('inp-peso').value = carta.peso !== undefined ? carta.peso : 0;
             document.getElementById('inp-arte').value = carta.arte || '';
-            document.getElementById('inp-energia').value = carta.energia !== undefined ? carta.energia : 1;
-            document.getElementById('inp-usos').value = carta.usos !== undefined ? carta.usos : 2;
-            document.getElementById('inp-calor').value = carta.calor !== undefined ? carta.calor : 1;
+            document.getElementById('inp-energia').value = carta.energia !== undefined ? carta.energia : 0;
+            document.getElementById('inp-usos').value = carta.usos !== undefined ? carta.usos : 0;
+            document.getElementById('inp-calor').value = carta.calor !== undefined ? carta.calor : 0;
+
+            document.getElementById('inp-modo-inf').value = carta.modo_inferior || 'auto';
+
+            if (carta.simbolos) {
+                Object.keys(dicionarioSimbolos).forEach(id => {
+                    document.getElementById(`simb-${id}`).innerText = carta.simbolos[id] || 0;
+                });
+            }
 
             const arestas = carta.arestasHex || [];
             document.querySelectorAll('.inp-edge').forEach(cb => {
@@ -210,71 +234,109 @@ function gerarSvgHexagono(tipo) {
 function updateCard() {
     const tipo = document.getElementById('inp-tipo').value;
     const isUpgraded = document.getElementById('inp-upgraded').checked;
+    const modoInf = document.getElementById('inp-modo-inf').value;
     const card = document.getElementById('card-preview');
 
     const hexContainer = document.getElementById('hex-selector-container');
-    if (hexContainer) {
-        hexContainer.className = `hex-grid-selector tipo-${tipo}`;
-    }
+    if (hexContainer) hexContainer.className = `hex-grid-selector tipo-${tipo}`;
 
     isUpgraded ? card.classList.add('upgraded') : card.classList.remove('upgraded');
 
-    document.getElementById('out-nome').innerText = document.getElementById('inp-nome').value;
-    document.getElementById('out-energia').innerText = `⚡ ${document.getElementById('inp-energia').value}`;
-    document.getElementById('out-calor').innerText = `🔥 ${document.getElementById('inp-calor').value}`;
+    const nome = document.getElementById('inp-nome').value;
+    const peso = parseInt(document.getElementById('inp-peso').value) || 0;
+    let nomeStr = nome;
+    if (peso !== 0) {
+        const sinal = peso > 0 ? '+' : '';
+        nomeStr += `<span style="float:right; font-size: 0.8em; color: #a8a8a8;">⚖️ ${sinal}${peso}</span>`;
+    }
+    document.getElementById('out-nome').innerHTML = nomeStr;
 
-    const usosNum = parseInt(document.getElementById('inp-usos').value) || 0;
-    document.getElementById('out-usos-slots').innerHTML = '<div class="uses-slot"></div>'.repeat(usosNum);
+    const energia = parseInt(document.getElementById('inp-energia').value) || 0;
+    const outEnergia = document.getElementById('out-energia');
+    if (energia === 0) outEnergia.classList.add('invisible');
+    else { outEnergia.classList.remove('invisible'); outEnergia.innerText = `⚡ ${energia}`; }
+
+    const calor = parseInt(document.getElementById('inp-calor').value) || 0;
+    const boxCalor = document.getElementById('out-box-calor');
+    if (calor === 0) boxCalor.classList.add('invisible');
+    else { boxCalor.classList.remove('invisible'); document.getElementById('out-calor').innerText = `🔥 ${calor}`; }
+
+    const usos = parseInt(document.getElementById('inp-usos').value) || 0;
+    const boxUsos = document.getElementById('out-box-usos');
+    if (usos === 0) boxUsos.classList.add('invisible');
+    else { boxUsos.classList.remove('invisible'); document.getElementById('out-usos-slots').innerHTML = '<div class="uses-slot"></div>'.repeat(usos); }
+
+    const dano = parseInt(document.getElementById('inp-dano').value) || 0;
+    const boxDano = document.getElementById('out-box-dano');
+    if (tipo !== 'arma' || dano === 0) boxDano.classList.add('invisible');
+    else { boxDano.classList.remove('invisible'); document.getElementById('out-dano').innerText = `💥 ${dano}`; }
 
     const badge = document.getElementById('out-badge-tipo');
-    const svgContainer = document.getElementById('out-svg-container');
-    const statusRow = document.getElementById('out-status-row');
-    const txtArte = document.getElementById('inp-arte').value.replace(/\n/g, '<br>');
+    if (tipo === 'arma') { badge.className = 'badge badge-arma'; badge.innerText = '🔴'; }
+    else if (tipo === 'suporte') { badge.className = 'badge badge-suporte'; badge.innerText = '🔵'; }
+    else if (tipo === 'propulsao') { badge.className = 'badge badge-propulsao'; badge.innerText = '🟢'; }
+    else if (tipo === 'especial') { badge.className = 'badge badge-especial'; badge.innerText = '🟣'; }
 
-    const svgPronto = gerarSvgHexagono(tipo);
-    svgContainer.innerHTML = svgPronto + `<div class="art-text">${txtArte}</div>`;
+    const svgContainer = document.getElementById('out-svg-container');
+    const txtArte = document.getElementById('inp-arte').value.replace(/\n/g, '<br>');
+    svgContainer.innerHTML = gerarSvgHexagono(tipo) + `<div class="art-text">${txtArte}</div>`;
+
+    document.getElementById('panel-dano').classList.add('hide');
+    document.getElementById('panel-mira').classList.add('hide');
+    document.getElementById('panel-desc').classList.add('hide');
+    document.getElementById('panel-simbolos').classList.add('hide');
+
+    if (tipo === 'arma') document.getElementById('panel-dano').classList.remove('hide');
+
+    if (modoInf === 'simbolos') {
+        document.getElementById('panel-simbolos').classList.remove('hide');
+    } else {
+        if (tipo === 'arma') document.getElementById('panel-mira').classList.remove('hide');
+        else document.getElementById('panel-desc').classList.remove('hide');
+    }
+
+    document.getElementById('out-tabela').classList.add('hide');
+    document.getElementById('out-desc').classList.add('hide');
+    document.getElementById('out-simbolos').classList.add('hide');
+    const statusRow = document.getElementById('out-status-row');
 
     if (tipo === 'arma') {
-        document.getElementById('panel-arma').classList.remove('hide');
-        document.getElementById('panel-desc').classList.add('hide');
-
-        document.getElementById('out-box-dano').classList.remove('hide');
-        document.getElementById('out-tabela').classList.remove('hide');
-        document.getElementById('out-desc').classList.add('hide');
-        statusRow.classList.remove('status-row-utility');
-
-        badge.className = 'badge badge-arma';
-        badge.innerText = '🔴';
         document.getElementById('out-usos-lbl').innerText = 'TIROS';
-
-        document.getElementById('out-dano').innerText = `💥 ${document.getElementById('inp-dano').value}`;
-
         ['0','1','3'].forEach(hex => {
             const val = document.getElementById(`inp-hex${hex}`).value;
             const el = document.getElementById(`out-hex${hex}`);
             el.innerText = val;
             el.className = (val.includes('X') || val.includes('-')) ? 'cell-bot val-miss' : 'cell-bot val-hit';
         });
-
     } else {
-        document.getElementById('panel-arma').classList.add('hide');
-        document.getElementById('panel-desc').classList.remove('hide');
-
-        document.getElementById('out-box-dano').classList.add('hide');
-        document.getElementById('out-tabela').classList.add('hide');
-        document.getElementById('out-desc').classList.remove('hide');
-        statusRow.classList.add('status-row-utility');
-
         document.getElementById('out-usos-lbl').innerText = 'USOS';
         document.getElementById('out-desc').innerHTML = document.getElementById('inp-desc').value;
+    }
 
-        if (tipo === 'suporte') {
-            badge.className = 'badge badge-suporte';
-            badge.innerText = '🔵';
-        } else if (tipo === 'propulsao') {
-            badge.className = 'badge badge-propulsao';
-            badge.innerText = '🟢';
-        }
+    if (modoInf === 'simbolos') {
+        const simbBox = document.getElementById('out-simbolos');
+        simbBox.classList.remove('hide');
+
+        let simbStr = '';
+        Object.keys(dicionarioSimbolos).forEach(id => {
+            const qtd = parseInt(document.getElementById(`simb-${id}`).innerText) || 0;
+            if (qtd > 0) {
+                if (simbStr !== '') simbStr += ' ';
+                simbStr += (qtd <= 3) ? dicionarioSimbolos[id].repeat(qtd) : `${dicionarioSimbolos[id]} ${qtd}`;
+            }
+        });
+
+        simbBox.innerText = simbStr;
+
+        const strLen = Array.from(simbStr).length;
+        if (strLen < 6) simbBox.style.fontSize = '34px';
+        else if (strLen < 12) simbBox.style.fontSize = '26px';
+        else if (strLen < 18) simbBox.style.fontSize = '20px';
+        else simbBox.style.fontSize = '16px';
+
+    } else {
+        if (tipo === 'arma') document.getElementById('out-tabela').classList.remove('hide');
+        else document.getElementById('out-desc').classList.remove('hide');
     }
 }
 
@@ -288,12 +350,7 @@ async function exportarCartaPNG() {
     const nomeArquivo = `${nomeFormatado}${sufixo}.png`;
 
     try {
-        const canvas = await html2canvas(cardElement, {
-            scale: 3,
-            backgroundColor: null,
-            useCORS: true
-        });
-
+        const canvas = await html2canvas(cardElement, { scale: 3, backgroundColor: null, useCORS: true });
         const link = document.createElement('a');
         link.download = nomeArquivo;
         link.href = canvas.toDataURL('image/png');
