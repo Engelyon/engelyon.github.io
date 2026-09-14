@@ -20,9 +20,10 @@
 
     <h2 id="form-title">🛠️ Configurador de Módulo</h2>
 
+    <!-- NOVA LINHA: Tipo, Raridade e Ato -->
     <div class="row">
         <div class="form-group">
-            <label>Tipo de Carta</label>
+            <label>Tipo</label>
             <select id="inp-tipo">
                 <option value="arma">Arma (Vermelho)</option>
                 <option value="suporte">Suporte (Azul)</option>
@@ -30,12 +31,26 @@
                 <option value="especial">Especial (Roxo)</option>
             </select>
         </div>
-        <div class="form-group checkbox-group" style="padding-top: 20px;">
-            <input type="checkbox" id="inp-upgraded">
-            <label for="inp-upgraded" style="color: #fbbf24;">UPGRADE</label>
+        <div class="form-group">
+            <label>Ato</label>
+            <select id="inp-ato">
+                <option value="1">Ato 1 (1 Linha)</option>
+                <option value="2">Ato 2 (2 Linhas)</option>
+                <option value="3">Ato 3 (3 Linhas)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Raridade</label>
+            <select id="inp-raridade">
+                <option value="comum">Comum (Cinza)</option>
+                <option value="incomum">Incomum (Azul)</option>
+                <option value="raro">Raro (Roxo)</option>
+                <option value="unico">Único (Verde Neon)</option>
+            </select>
         </div>
     </div>
 
+    <!-- NOME, PESO e UPGRADE -->
     <div class="row">
         <div class="form-group" style="flex: 2;">
             <label>Nome do Módulo</label>
@@ -44,6 +59,10 @@
         <div class="form-group" style="flex: 1;">
             <label>⚖️ Peso</label>
             <input type="number" id="inp-peso" value="0">
+        </div>
+        <div class="form-group checkbox-group" style="padding-top: 20px;">
+            <input type="checkbox" id="inp-upgraded">
+            <label for="inp-upgraded" style="color: #fbbf24;">UPGRADE</label>
         </div>
     </div>
 
@@ -137,6 +156,10 @@
     <div class="card" id="card-preview">
         <div class="top-bar">
             <div class="badge energy" id="out-energia">⚡ 1</div>
+
+            <!-- ELEMENTO DO PESO REPOSICIONADO PARA O TOPO -->
+            <div class="weight-display hide" id="out-peso-box"></div>
+
             <div class="badge badge-arma" id="out-badge-tipo">🔴</div>
         </div>
 

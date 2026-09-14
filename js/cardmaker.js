@@ -2,6 +2,7 @@ const verticesHex = [
     [27.5, 11], [72.5, 11], [95, 50], [72.5, 89], [27.5, 89], [5, 50]
 ];
 const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e', especial: '#a855f7' };
+const coresRaridade = { comum: '#484f58', incomum: '#38bdf8', raro: '#a855f7', unico: '#4ade80' };
 const dicionarioSimbolos = { raio: '⚡', pilha: '🔋', coracao: '💖', escudo: '🛡️', seta: '🔼' };
 
 let deckJSON = [];
@@ -85,6 +86,8 @@ async function saveCardToJSON() {
         id: isEditMode ? cartaSendoEditada.id : "MOD_" + Date.now().toString().slice(-6),
         nome: nomeAtual,
         tipo: document.getElementById('inp-tipo').value,
+        ato: parseInt(document.getElementById('inp-ato').value),
+        raridade: document.getElementById('inp-raridade').value,
         upgraded: document.getElementById('inp-upgraded').checked,
         peso: parseInt(document.getElementById('inp-peso').value) || 0,
         energia: parseInt(document.getElementById('inp-energia').value) || 0,
@@ -172,6 +175,8 @@ function checarModoEdicao() {
             if (btnLoad) btnLoad.style.display = 'none';
 
             document.getElementById('inp-tipo').value = carta.tipo || 'arma';
+            document.getElementById('inp-ato').value = carta.ato || '1';
+            document.getElementById('inp-raridade').value = carta.raridade || 'comum';
             document.getElementById('inp-upgraded').checked = !!carta.upgraded;
             document.getElementById('inp-nome').value = carta.nome || '';
             document.getElementById('inp-peso').value = carta.peso !== undefined ? carta.peso : 0;
@@ -242,14 +247,23 @@ function updateCard() {
 
     isUpgraded ? card.classList.add('upgraded') : card.classList.remove('upgraded');
 
-    const nome = document.getElementById('inp-nome').value;
+    document.getElementById('out-nome').innerText = document.getElementById('inp-nome').value;
+
+    // LÓGICA DO PESO NO TOPO
     const peso = parseInt(document.getElementById('inp-peso').value) || 0;
-    let nomeStr = nome;
-    if (peso !== 0) {
-        const sinal = peso > 0 ? '+' : '';
-        nomeStr += `<span style="float:right; font-size: 0.8em; color: #a8a8a8;">⚖️ ${sinal}${peso}</span>`;
+    const pesoBox = document.getElementById('out-peso-box');
+    if (peso === 0) {
+        pesoBox.classList.add('hide');
+    } else {
+        pesoBox.classList.remove('hide');
+        const icon = peso > 0 ? '🏋️' : '🪶';
+        const valAbs = Math.abs(peso);
+        if (valAbs <= 2) {
+            pesoBox.innerText = icon.repeat(valAbs);
+        } else {
+            pesoBox.innerText = `${icon} ${valAbs}`;
+        }
     }
-    document.getElementById('out-nome').innerHTML = nomeStr;
 
     const energia = parseInt(document.getElementById('inp-energia').value) || 0;
     const outEnergia = document.getElementById('out-energia');
@@ -277,9 +291,23 @@ function updateCard() {
     else if (tipo === 'propulsao') { badge.className = 'badge badge-propulsao'; badge.innerText = '🟢'; }
     else if (tipo === 'especial') { badge.className = 'badge badge-especial'; badge.innerText = '🟣'; }
 
+    // ARTE COM LINHAS DE ATO (BACKGROUND)
+    const ato = parseInt(document.getElementById('inp-ato').value) || 1;
+    const raridade = document.getElementById('inp-raridade').value;
+    const corLinha = coresRaridade[raridade] || '#484f58';
+
+    let linhasHTML = '';
+    for (let i = 0; i < ato; i++) {
+        linhasHTML += `<div class="bg-line" style="background-color: ${corLinha};"></div>`;
+    }
+
     const svgContainer = document.getElementById('out-svg-container');
     const txtArte = document.getElementById('inp-arte').value.replace(/\n/g, '<br>');
-    svgContainer.innerHTML = gerarSvgHexagono(tipo) + `<div class="art-text">${txtArte}</div>`;
+    svgContainer.innerHTML = `
+        <div class="bg-lines-container">${linhasHTML}</div>
+        ${gerarSvgHexagono(tipo)}
+        <div class="art-text">${txtArte}</div>
+    `;
 
     document.getElementById('panel-dano').classList.add('hide');
     document.getElementById('panel-mira').classList.add('hide');
