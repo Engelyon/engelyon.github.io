@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estúdio de Cartas - Sci-Fi</title>
+    <title>Editor de Módulos</title>
     <link rel="stylesheet" href="../css/cardmaker_2.css">
     <script src="../js/cardmaker_2.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-<a href="../index.html" class="btn-back">⬅ Voltar ao Menu</a>
+<a href="../index.html" class="btn-back">⬅ Voltar</a>
 
 <div class="workspace">
     <div class="hud-panel hud-left">
         <div class="control-group">
-            <label>Ato do Jogo</label>
+            <label>Ato</label>
             <select id="ctrl-ato">
-                <option value="1">Ato 1 (1 Linha)</option>
-                <option value="2">Ato 2 (2 Linhas)</option>
-                <option value="3">Ato 3 (3 Linhas)</option>
+                <option value="1">Ato 1</option>
+                <option value="2">Ato 2</option>
+                <option value="3">Ato 3</option>
             </select>
         </div>
         <div class="control-group" style="margin-top: 15px;">
             <label>Raridade</label>
             <select id="ctrl-raridade">
-                <option value="comum">Comum (Cinza)</option>
-                <option value="incomum">Incomum (Azul)</option>
-                <option value="raro">Raro (Roxo)</option>
-                <option value="unico">Único (Verde Neon)</option>
+                <option value="comum">Comum</option>
+                <option value="incomum">Incomum</option>
+                <option value="raro">Raro</option>
+                <option value="unico">Único</option>
             </select>
         </div>
         <div class="control-group checkbox-group" style="margin-top: 25px;">
@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <div class="desc-box editable-text hide" id="out-desc" contenteditable="true">Descrição da carta aqui...</div>
+            <div class="desc-box editable-text hide" id="out-desc" contenteditable="true">Descrição</div>
             <div class="simbolos-box hide" id="out-simbolos"></div>
         </div>
     </div>
@@ -121,9 +121,9 @@
 
             <div class="control-group" style="margin-top: 10px;">
                 <select id="ctrl-range3" style="margin-bottom: 5px; width: 100%;">
-                    <option value="3+ hex">Longo: 3+ hex</option>
-                    <option value="3-4 hex">Longo: 3-4 hex</option>
-                    <option value="3-5 hex">Longo: 3-5 hex</option>
+                    <option value="3+ hex">3+ hex</option>
+                    <option value="3-4 hex">3-4 hex</option>
+                    <option value="3-5 hex">3-5 hex</option>
                 </select>
                 <div class="hud-controls">
                     <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">Longo</span>
@@ -140,9 +140,9 @@
         <div class="control-group">
             <label>Modo da Área Inferior</label>
             <select id="ctrl-modo-inf">
-                <option value="texto">✏️ Texto Descritivo</option>
-                <option value="mira">🎯 Tabela de Mira</option>
-                <option value="simbolos">🧩 Símbolos (Energia, Escudo...)</option>
+                <option value="texto">Texto Descritivo</option>
+                <option value="mira">Tabela de Mira</option>
+                <option value="simbolos">Símbolos </option>
             </select>
         </div>
 
@@ -154,7 +154,7 @@
             <div class="simb-row"><span class="simb-icon">🔼 Movimento</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('seta', -1)">-</button><span class="hud-val" id="simb-seta">0</span><button class="btn-hud" onclick="chgSimb('seta', 1)">+</button></div></div>
         </div>
 
-        <button id="btn-export-png" class="btn-export">📷 Exportar Imagem (PNG)</button>
+        <button id="btn-export-png" class="btn-export">📷 Salvar PNG</button>
     </div>
 </div>
 
