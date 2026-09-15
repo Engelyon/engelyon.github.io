@@ -15,6 +15,14 @@
 <div class="workspace">
     <div class="hud-panel hud-left">
         <div class="control-group">
+            <label>Ato do Jogo</label>
+            <select id="ctrl-ato">
+                <option value="1">Ato 1 (1 Linha)</option>
+                <option value="2">Ato 2 (2 Linhas)</option>
+                <option value="3">Ato 3 (3 Linhas)</option>
+            </select>
+        </div>
+        <div class="control-group" style="margin-top: 15px;">
             <label>Raridade</label>
             <select id="ctrl-raridade">
                 <option value="comum">Comum (Cinza)</option>
@@ -23,31 +31,30 @@
                 <option value="unico">Único (Verde Neon)</option>
             </select>
         </div>
-        <div class="control-group checkbox-group" style="margin-top: 15px;">
+        <div class="control-group checkbox-group" style="margin-top: 25px;">
             <input type="checkbox" id="ctrl-upgraded">
-            <label for="ctrl-upgraded" style="color: #fbbf24;">🌟 UPGRADE</label>
+            <label for="ctrl-upgraded" style="color: #fbbf24; font-size: 13px;">🌟 UPGRADE</label>
         </div>
     </div>
 
     <div class="card-container">
         <div class="card" id="card-preview">
             <div class="top-bar">
-                <div class="badge energy" id="out-box-energia">⚡ <span class="editable-num" id="out-energia" contenteditable="true">1</span></div>
+                <div class="badge energy" id="out-box-energia">⚡ <span id="out-energia">1</span></div>
 
                 <div class="weight-display" id="out-box-peso">
-                    <span id="peso-icon" class="clickable-icon" title="Clique para Inverter Positivo/Negativo">🏋️</span>
-                    <span class="editable-num" id="out-peso" contenteditable="true">0</span>
+                    <span id="peso-icon" title="Controlado no painel direito">🏋️</span>
+                    <span id="out-peso">0</span>
                 </div>
 
                 <div class="badge badge-arma clickable-icon" id="out-badge-tipo" title="Clique para mudar o tipo">🔴</div>
             </div>
 
-            <div class="art-container" id="out-svg-container">
-            </div>
+            <div class="art-container" id="out-svg-container"></div>
 
             <div class="status-row" id="out-status-row">
                 <div class="stat-box dmg-box" id="out-box-dano">
-                    <div class="dmg-val">💥 <span class="editable-num" id="out-dano" contenteditable="true">2</span></div>
+                    <div class="dmg-val">💥 <span id="out-dano">2</span></div>
                     <div class="dmg-lbl">DANO</div>
                 </div>
                 <div class="uses-track" id="out-box-usos">
@@ -55,7 +62,7 @@
                     <div class="uses-slots" id="out-usos-slots"></div>
                 </div>
                 <div class="stat-box heat-gen-box" id="out-box-calor">
-                    <div class="heat-gen-val">🔥 <span class="editable-num" id="out-calor" contenteditable="true">1</span></div>
+                    <div class="heat-gen-val">🔥 <span id="out-calor">1</span></div>
                     <div class="heat-gen-lbl">CALOR</div>
                 </div>
             </div>
@@ -64,9 +71,9 @@
 
             <div class="range-table hide" id="out-tabela">
                 <div class="range-grid">
-                    <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot editable-text" id="out-hex0" contenteditable="true">-</div></div>
-                    <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot editable-text" id="out-hex1" contenteditable="true">-</div></div>
-                    <div class="grid-cell"><div class="cell-top" id="out-hex3-label">3+ hex</div><div class="cell-bot editable-text" id="out-hex3" contenteditable="true">-</div></div>
+                    <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot" id="out-hex0">-</div></div>
+                    <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot" id="out-hex1">-</div></div>
+                    <div class="grid-cell"><div class="cell-top" id="out-hex3-label">3+ hex</div><div class="cell-bot" id="out-hex3">-</div></div>
                 </div>
             </div>
 
@@ -77,30 +84,53 @@
 
     <div class="hud-panel hud-right">
         <div class="control-group">
-            <label>Ato do Jogo</label>
-            <select id="ctrl-ato">
-                <option value="1">Ato 1 (1 Linha)</option>
-                <option value="2">Ato 2 (2 Linhas)</option>
-                <option value="3">Ato 3 (3 Linhas)</option>
-            </select>
+            <label>💥 Dano</label>
+            <div class="hud-controls"><button class="btn-hud" onclick="chgStat('dano', -1)">-</button><span class="hud-val" id="disp-dano">0</span><button class="btn-hud" onclick="chgStat('dano', 1)">+</button></div>
+        </div>
+        <div class="control-group" style="margin-top: 8px;">
+            <label>⚡ Energia</label>
+            <div class="hud-controls"><button class="btn-hud" onclick="chgStat('energia', -1)">-</button><span class="hud-val" id="disp-energia">1</span><button class="btn-hud" onclick="chgStat('energia', 1)">+</button></div>
+        </div>
+        <div class="control-group" style="margin-top: 8px;">
+            <label>🔥 Calor</label>
+            <div class="hud-controls"><button class="btn-hud" onclick="chgStat('calor', -1)">-</button><span class="hud-val" id="disp-calor">1</span><button class="btn-hud" onclick="chgStat('calor', 1)">+</button></div>
+        </div>
+        <div class="control-group" style="margin-top: 8px;">
+            <label>🟦 Usos</label>
+            <div class="hud-controls"><button class="btn-hud" onclick="chgStat('usos', -1)">-</button><span class="hud-val" id="disp-usos">2</span><button class="btn-hud" onclick="chgStat('usos', 1)">+</button></div>
+        </div>
+        <div class="control-group" style="margin-top: 8px;">
+            <label>⚖️ Peso (+ Haltere / - Pena)</label>
+            <div class="hud-controls"><button class="btn-hud" onclick="chgStat('peso', -1)">-</button><span class="hud-val" id="disp-peso">0</span><button class="btn-hud" onclick="chgStat('peso', 1)">+</button></div>
         </div>
 
-        <div class="control-group" style="margin-top: 15px;">
-            <label>Quantidade de Usos</label>
-            <div class="hud-controls">
-                <button class="btn-hud" onclick="chgUsos(-1)">-</button>
-                <span class="hud-val" id="disp-usos">2</span>
-                <button class="btn-hud" onclick="chgUsos(1)">+</button>
+        <div id="ctrl-mira-panel" class="hide" style="margin-top: 20px; border-top: 1px solid #30363d; padding-top: 15px;">
+            <label style="display: block; margin-bottom: 5px;">🎯 Tabela de Mira</label>
+
+            <div class="hud-controls" style="margin-bottom: 5px;">
+                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">0 hex</span>
+                <button class="btn-hud" onclick="chgMira('hex0', -1)">-</button><span class="hud-val" id="disp-hex0">X</span><button class="btn-hud" onclick="chgMira('hex0', 1)">+</button>
+                <button class="btn-hud btn-x" onclick="setMiraX('hex0')">X</button>
             </div>
-        </div>
 
-        <div class="control-group hide" id="ctrl-group-range3" style="margin-top: 15px;">
-            <label>Tipo de Alcance Longo</label>
-            <select id="ctrl-range3">
-                <option value="3+ hex">3+ hex</option>
-                <option value="3-4 hex">3-4 hex</option>
-                <option value="3-5 hex">3-5 hex</option>
-            </select>
+            <div class="hud-controls" style="margin-bottom: 5px;">
+                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">1-2 hex</span>
+                <button class="btn-hud" onclick="chgMira('hex1', -1)">-</button><span class="hud-val" id="disp-hex1">X</span><button class="btn-hud" onclick="chgMira('hex1', 1)">+</button>
+                <button class="btn-hud btn-x" onclick="setMiraX('hex1')">X</button>
+            </div>
+
+            <div class="control-group" style="margin-top: 10px;">
+                <select id="ctrl-range3" style="margin-bottom: 5px; width: 100%;">
+                    <option value="3+ hex">Longo: 3+ hex</option>
+                    <option value="3-4 hex">Longo: 3-4 hex</option>
+                    <option value="3-5 hex">Longo: 3-5 hex</option>
+                </select>
+                <div class="hud-controls">
+                    <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">Longo</span>
+                    <button class="btn-hud" onclick="chgMira('hex3', -1)">-</button><span class="hud-val" id="disp-hex3">X</span><button class="btn-hud" onclick="chgMira('hex3', 1)">+</button>
+                    <button class="btn-hud btn-x" onclick="setMiraX('hex3')">X</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -108,7 +138,7 @@
 <div class="hud-bottom">
     <div class="hud-bottom-inner">
         <div class="control-group">
-            <label>Modo da Área Inferior (Qualquer Módulo)</label>
+            <label>Modo da Área Inferior</label>
             <select id="ctrl-modo-inf">
                 <option value="texto">✏️ Texto Descritivo</option>
                 <option value="mira">🎯 Tabela de Mira</option>
