@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador de Missões — The First Star: Rebels</title>
+    <link rel="stylesheet" href="../css/missoes.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="../js/missoes.js" defer></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <a href="../index.html" class="back-link">← Voltar ao menu</a>
+        <h1>Criar missão</h1>
+
+        <form id="mission-form">
+            <label class="field">
+                Nome da missão
+                <input id="mission-name" type="text" placeholder="Nome da missão">
+            </label>
+            <div class="field-grid">
+                <label class="field">
+                    Ato
+                    <select id="mission-act">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
+                <label class="field">
+                    Dificuldade
+                    <input id="mission-difficulty" type="text">
+                </label>
+                <label class="field">
+                    Facção
+                    <input id="mission-faction" type="text">
+                </label>
+                <label class="field">
+                    Tensão
+                    <input id="mission-tension" type="text">
+                </label>
+            </div>
+
+            <fieldset class="form-section">
+                <legend><span aria-hidden="true">◎</span> Inimigos por número de jogadores</legend>
+                <label class="field">
+                    Jogadores
+                    <select id="player-count" aria-controls="enemy-groups">
+                        <option value="1">1 jogador</option>
+                        <option value="2">2 jogadores</option>
+                        <option value="3">3 jogadores</option>
+                        <option value="4">4 jogadores</option>
+                    </select>
+                </label>
+                <div id="enemy-groups"></div>
+                <button id="add-enemy" type="button" class="add-row">+ Adicionar inimigo</button>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend><span aria-hidden="true">⬡</span> Obstáculos</legend>
+                <div id="obstacle-rows" class="entry-list"></div>
+                <button id="add-obstacle" type="button" class="add-row">+ Adicionar obstáculo</button>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend><span aria-hidden="true">◈</span> Missão e recompensas</legend>
+                <label class="field">
+                    Descrição da missão
+                    <textarea id="mission-description" rows="4"></textarea>
+                </label>
+                <label class="field">
+                    Recompensas
+                    <textarea id="mission-rewards" rows="3"></textarea>
+                </label>
+            </fieldset>
+        </form>
+
+        <div class="export-controls">
+            <label class="print-option">
+                <input id="print-economy" type="checkbox">
+                Impressão econômica (P&B)
+            </label>
+            <button id="export-png" type="button" class="export-button"><span aria-hidden="true">↓</span> Exportar PNG</button>
+            <p id="export-message" class="export-message" role="status" hidden></p>
+        </div>
+    </aside>
+
+    <main id="preview-area" class="preview-area" aria-label="Prévia da ficha de missão">
+        <div id="preview-frame" class="preview-frame">
+            <article id="mission-card" class="mission-card" aria-labelledby="card-title">
+                <header class="card-header">
+                    <h2 id="card-title">Nome da missão</h2>
+                    <dl class="card-meta">
+                        <div><dt><span aria-hidden="true">◆</span> Ato</dt><dd id="card-act">1</dd></div>
+                        <div><dt><span aria-hidden="true">△</span> Dificuldade</dt><dd id="card-difficulty">—</dd></div>
+                        <div><dt><span aria-hidden="true">⚑</span> Facção</dt><dd id="card-faction">—</dd></div>
+                        <div><dt><span aria-hidden="true">ϟ</span> Tensão</dt><dd id="card-tension">—</dd></div>
+                    </dl>
+                </header>
+                <div class="card-columns">
+                    <div class="card-column">
+                        <section class="card-block">
+                            <h3><span aria-hidden="true">◎</span> Inimigos por nº de jogadores</h3>
+                            <div id="card-enemies" class="card-entries"></div>
+                        </section>
+                        <section class="card-block">
+                            <h3><span aria-hidden="true">⬡</span> Obstáculos</h3>
+                            <div id="card-obstacles" class="card-entries"></div>
+                        </section>
+                    </div>
+                    <div class="card-column">
+                        <section class="card-block description-block">
+                            <h3><span aria-hidden="true">◈</span> Missão</h3>
+                            <p id="card-description" class="card-prose"></p>
+                        </section>
+                        <section class="card-block rewards-block">
+                            <h3><span aria-hidden="true">★</span> Recompensas</h3>
+                            <p id="card-rewards" class="card-prose"></p>
+                        </section>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <template id="enemy-row-template">
+        <div class="entry-row enemy-row">
+            <label class="field">Nome do inimigo <input class="enemy-name" type="text"></label>
+            <div class="field">Quantidade
+                <span class="quantity-control">
+                    <button type="button" class="decrease-quantity" aria-label="Diminuir quantidade">−</button>
+                    <input class="enemy-quantity" type="number" min="1" step="1" value="1" aria-label="Quantidade">
+                    <button type="button" class="increase-quantity" aria-label="Aumentar quantidade">+</button>
+                </span>
+            </div>
+            <button type="button" class="remove-row" aria-label="Remover inimigo">×</button>
+        </div>
+    </template>
+    <template id="obstacle-row-template">
+        <div class="entry-row obstacle-row">
+            <label class="field">Nome do obstáculo <input class="obstacle-name" type="text"></label>
+            <label class="field">Coordenadas <input class="obstacle-coordinates" type="text" placeholder="Ex. B3, C4" spellcheck="false"></label>
+            <button type="button" class="remove-row" aria-label="Remover obstáculo">×</button>
+        </div>
+    </template>
+</body>
+</html>

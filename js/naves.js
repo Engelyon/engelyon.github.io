@@ -7,9 +7,21 @@ const HULL_THICKNESS = 30;
 const OUTER_CHAMFER = 40;
 const INNER_CHAMFER = 95;
 
+const tiposModulo = [
+    { id: 'b', classe: 'color-blue', nome: 'Suporte', simbolo: '+' },
+    { id: 'p', classe: 'color-purple', nome: 'Especial', simbolo: '◆' },
+    { id: 'g', classe: 'color-green', nome: 'Propulsão', simbolo: '▲' },
+    { id: 'r', classe: 'color-red', nome: 'Arma', simbolo: '⊕' }
+];
+
 let slots = new Map();
 
 window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('module-legend').innerHTML = tiposModulo.map(tipo =>
+        `<div class="legend-item"><span class="square-dot ${tipo.classe}" aria-hidden="true"><span class="module-symbol">${tipo.simbolo}</span></span>${tipo.nome}</div>`
+    ).join('');
+    const printToggle = document.getElementById('ctrl-print-economy');
+    printToggle.addEventListener('change', renderGrid);
     slots.set("0,0", { b: true, p: true, g: true, r: true });
     renderGrid();
     document.getElementById('btn-export-png').addEventListener('click', exportarPNG);
@@ -30,6 +42,9 @@ function renderGrid() {
     }
 
     const grid = document.getElementById('ship-grid');
+    const impressaoEconomica = document.getElementById('ctrl-print-economy').checked;
+    grid.classList.toggle('print-economy', impressaoEconomica);
+    document.getElementById('module-legend').classList.toggle('print-economy', impressaoEconomica);
 
     Array.from(grid.children).forEach(child => { if (child.id !== 'hull-svg') child.remove(); });
 
@@ -54,15 +69,21 @@ function renderGrid() {
                 // Matriz 2x2 de Cores
                 const colorsWrap = document.createElement('div');
                 colorsWrap.className = 'colors-wrap';
-                const coresDef = [
-                    { id: 'b', class: 'color-blue' }, { id: 'p', class: 'color-purple' },
-                    { id: 'g', class: 'color-green' }, { id: 'r', class: 'color-red' }
-                ];
-                coresDef.forEach(c => {
-                    const btnColor = document.createElement('div');
-                    btnColor.className = `square-btn ${c.class} ${data[c.id] ? 'active' : ''}`;
-                    btnColor.onclick = () => { data[c.id] = !data[c.id]; renderGrid(); };
-                    colorsWrap.appendChild(btnColor);
+                tiposModulo.forEach(tipo => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = `square-btn ${tipo.classe}`;
+                    button.classList.toggle('active', data[tipo.id]);
+                    button.setAttribute('aria-pressed', data[tipo.id]);
+                    button.setAttribute('aria-label', tipo.nome);
+                    button.title = tipo.nome;
+                    button.innerHTML = `<span class="module-symbol" aria-hidden="true">${tipo.simbolo}</span>`;
+                    button.onclick = () => {
+                        data[tipo.id] = !data[tipo.id];
+                        button.classList.toggle('active', data[tipo.id]);
+                        button.setAttribute('aria-pressed', data[tipo.id]);
+                    };
+                    colorsWrap.appendChild(button);
                 });
                 cell.appendChild(colorsWrap);
 
@@ -81,10 +102,10 @@ function renderGrid() {
         }
     }
 
-    desenharCascoSVG(minX, minY);
+    desenharCascoSVG(minX, minY, impressaoEconomica);
 }
 
-function desenharCascoSVG(minX, minY) {
+function desenharCascoSVG(minX, minY, impressaoEconomica) {
     const edges = [];
     for (let key of slots.keys()) {
         const [x, y] = key.split(',').map(Number);
@@ -116,6 +137,8 @@ function desenharCascoSVG(minX, minY) {
     }
 
     // C) Desenha a geometria com Expansão + Wrap
+    const fundo = impressaoEconomica ? '#ffffff' : '#5c6370';
+    const contorno = impressaoEconomica ? '#161616' : '#5c6370';
     let svgContent = '';
     loops.forEach(loop => {
         let pathD = "";
@@ -149,7 +172,7 @@ function desenharCascoSVG(minX, minY) {
             pathD += `L ${C2.x} ${C2.y} `;
         }
         pathD += "Z ";
-        svgContent += `<path d="${pathD}" fill="#5c6370" stroke="#5c6370" stroke-width="2" stroke-linejoin="bevel" />`;
+        svgContent += `<path d="${pathD}" fill="${fundo}" stroke="${contorno}" stroke-width="2" stroke-linejoin="bevel" />`;
     });
 
     document.getElementById('hull-svg').innerHTML = svgContent;
@@ -164,24 +187,33 @@ function createAddBtn(pos, nx, ny) {
 
 async function exportarPNG() {
     const grid = document.getElementById('ship-grid');
-    grid.classList.add('export-mode');
+    const exportButton = document.getElementById('btn-export-png');
+    const printToggle = document.getElementById('ctrl-print-economy');
+    if (exportButton.disabled) return;
 
-    const prevPosition = grid.style.position;
-    grid.style.position = 'absolute'; grid.style.top = '0'; grid.style.left = '0';
-
-    await new Promise(r => setTimeout(r, 100));
+    const sufixoImpressao = printToggle.checked ? '-pb' : '';
+    exportButton.disabled = true;
+    printToggle.disabled = true;
 
     try {
-        const canvas = await html2canvas(grid, { scale: 2, backgroundColor: null, useCORS: true });
+        const canvas = await html2canvas(grid, {
+            scale: 2,
+            backgroundColor: null,
+            useCORS: true,
+            onclone: (_, clonedGrid) => {
+                clonedGrid.classList.add('export-mode');
+                Object.assign(clonedGrid.style, { position: 'absolute', top: '0', left: '0' });
+            }
+        });
         const link = document.createElement('a');
-        link.download = `Blueprint_Nave_${Date.now()}.png`;
+        link.download = `Blueprint_Nave_${Date.now()}${sufixoImpressao}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
     } catch (e) {
         console.error("Erro ao exportar PNG:", e);
         alert("❌ Erro ao exportar o layout da Nave.");
     } finally {
-        grid.style.position = prevPosition;
-        grid.classList.remove('export-mode');
+        exportButton.disabled = false;
+        printToggle.disabled = false;
     }
 }

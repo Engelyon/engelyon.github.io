@@ -16,17 +16,18 @@
     <h2>🚀 Engenharia de Casco</h2>
     <p class="help-text">
         Clique nos botões <b>+</b> para expandir a estrutura da nave.<br><br>
-        Ligue/desligue as cores na matriz central para definir quais módulos são aceitos.
+        Ative ou desative os indicadores na matriz central para definir quais módulos são aceitos.
     </p>
 
-    <div class="legend-box">
-        <div class="legend-item"><span class="square-dot color-blue"></span> Suporte</div>
-        <div class="legend-item"><span class="square-dot color-purple"></span> Especial</div>
-        <div class="legend-item"><span class="square-dot color-green"></span> Propulsão</div>
-        <div class="legend-item"><span class="square-dot color-red"></span> Arma</div>
-    </div>
+    <div id="module-legend" class="legend-box"></div>
 
-    <button id="btn-export-png" class="btn-export">📷 Exportar Casco (PNG)</button>
+    <div class="export-controls">
+        <label class="print-option" for="ctrl-print-economy">
+            <input type="checkbox" id="ctrl-print-economy">
+            Impressão econômica (P&B)
+        </label>
+        <button id="btn-export-png" class="btn-export" type="button">📷 Exportar Casco (PNG)</button>
+    </div>
 </div>
 
 <div class="workspace" id="workspace">

@@ -25,6 +25,13 @@ window.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('input', atualizarCoresModificadores);
     });
 
+    const card = document.getElementById('enemy-card');
+    const printToggle = document.getElementById('ctrl-print-economy');
+    printToggle.addEventListener('change', () => {
+        card.classList.toggle('print-economy', printToggle.checked);
+        desenharTodosHexagonos();
+    });
+    card.classList.toggle('print-economy', printToggle.checked);
     document.getElementById('btn-export-png').addEventListener('click', exportarParaPNG);
 
     document.querySelectorAll('.editable-stat, .hex-dmg, .enemy-hp span, .enemy-shield span, .enemy-rank span, .action-name-plate').forEach(el => {
@@ -81,26 +88,30 @@ function atualizarModoAcao(actIndex, count) {
 }
 
 function desenharTodosHexagonos() {
+    const impressaoEconomica = document.getElementById('ctrl-print-economy').checked;
     for (let i = 1; i <= 3; i++) {
-        desenharHexagono(i);
+        desenharHexagono(i, impressaoEconomica);
     }
 }
 
-function desenharHexagono(actIndex) {
+function desenharHexagono(actIndex, impressaoEconomica) {
     const container = document.getElementById(`svg-act-${actIndex}`);
     if (!container) return;
 
     const checkboxes = document.querySelectorAll(`.edge-cb[data-act="${actIndex}"]`);
 
+    const fundo = impressaoEconomica ? '#ffffff' : '#010409';
+    const contorno = impressaoEconomica ? '#888888' : '#484f58';
+    const corAresta = impressaoEconomica ? '#161616' : corAtaque;
     let svgHTML = `<svg viewBox="0 0 100 100" style="width:100%; height:100%;">`;
-    svgHTML += `<polygon points="27.5,11 72.5,11 95,50 72.5,89 27.5,89 5,50" fill="#010409" stroke="#484f58" stroke-width="2"/>`;
+    svgHTML += `<polygon points="27.5,11 72.5,11 95,50 72.5,89 27.5,89 5,50" fill="${fundo}" stroke="${contorno}" stroke-width="2"/>`;
 
     checkboxes.forEach((cb) => {
         if (cb.checked) {
             const idx = parseInt(cb.value);
             const p1 = verticesHex[idx];
             const p2 = verticesHex[(idx + 1) % 6];
-            svgHTML += `<line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" stroke="${corAtaque}" stroke-width="7" stroke-linecap="round"/>`;
+            svgHTML += `<line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" stroke="${corAresta}" stroke-width="7" stroke-linecap="round"/>`;
         }
     });
 
@@ -110,14 +121,22 @@ function desenharHexagono(actIndex) {
 
 async function exportarParaPNG() {
     const cardElement = document.getElementById('enemy-card');
+    const exportButton = document.getElementById('btn-export-png');
+    const printToggle = document.getElementById('ctrl-print-economy');
+    if (exportButton.disabled) return;
+
     const isElite = document.getElementById('inp-elite').checked;
 
     const nomeRaw = document.getElementById('out-nome').innerText.trim() || 'inimigo';
     const nomeFormatado = nomeRaw.toLowerCase().replace(/\s+/g, '_');
     const sufixo = isElite ? '-e' : '';
-    const nomeArquivo = `${nomeFormatado}${sufixo}.png`;
+    const sufixoImpressao = printToggle.checked ? '-pb' : '';
+    const nomeArquivo = `${nomeFormatado}${sufixo}${sufixoImpressao}.png`;
 
-    if (document.activeElement) document.activeElement.blur();
+    document.activeElement?.blur();
+    exportButton.disabled = true;
+    printToggle.disabled = true;
+    cardElement.classList.add('export-mode');
 
     try {
         const canvas = await html2canvas(cardElement, {
@@ -133,5 +152,9 @@ async function exportarParaPNG() {
     } catch (err) {
         console.error("Erro ao gerar PNG:", err);
         alert("❌ Erro ao exportar a imagem. Tente novamente.");
+    } finally {
+        cardElement.classList.remove('export-mode');
+        exportButton.disabled = false;
+        printToggle.disabled = false;
     }
 }

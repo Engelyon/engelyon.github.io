@@ -58,12 +58,12 @@
                     <div class="dmg-lbl">DANO</div>
                 </div>
                 <div class="uses-track" id="out-box-usos">
-                    <div class="uses-lbl" id="out-usos-lbl">USOS</div>
+                    <div class="uses-lbl" id="out-usos-lbl">TIROS</div>
                     <div class="uses-slots" id="out-usos-slots"></div>
                 </div>
                 <div class="stat-box heat-gen-box" id="out-box-calor">
                     <div class="heat-gen-val">🔥 <span id="out-calor">1</span></div>
-                    <div class="heat-gen-lbl">CALOR</div>
+                    <div class="heat-gen-lbl">CALOR MÁX.</div>
                 </div>
             </div>
 
@@ -71,9 +71,9 @@
 
             <div class="range-table hide" id="out-tabela">
                 <div class="range-grid">
-                    <div class="grid-cell"><div class="cell-top">0 hex</div><div class="cell-bot" id="out-hex0">-</div></div>
-                    <div class="grid-cell"><div class="cell-top">1-2 hex</div><div class="cell-bot" id="out-hex1">-</div></div>
-                    <div class="grid-cell"><div class="cell-top" id="out-hex3-label">3+ hex</div><div class="cell-bot" id="out-hex3">-</div></div>
+                    <div class="grid-cell"><div class="cell-top">1 hex</div><div class="cell-bot" id="out-hex1">-</div></div>
+                    <div class="grid-cell"><div class="cell-top">2 hex</div><div class="cell-bot" id="out-hex2">-</div></div>
+                    <div class="grid-cell"><div class="cell-top" id="out-longo-label">3+ hex</div><div class="cell-bot" id="out-longo">-</div></div>
                 </div>
             </div>
 
@@ -88,15 +88,15 @@
             <div class="hud-controls"><button class="btn-hud" onclick="chgStat('dano', -1)">-</button><span class="hud-val" id="disp-dano">0</span><button class="btn-hud" onclick="chgStat('dano', 1)">+</button></div>
         </div>
         <div class="control-group" style="margin-top: 8px;">
-            <label>⚡ Energia</label>
+            <label>⚡ Custo de energia</label>
             <div class="hud-controls"><button class="btn-hud" onclick="chgStat('energia', -1)">-</button><span class="hud-val" id="disp-energia">1</span><button class="btn-hud" onclick="chgStat('energia', 1)">+</button></div>
         </div>
         <div class="control-group" style="margin-top: 8px;">
-            <label>🔥 Calor</label>
+            <label>🔥 Limite de calor</label>
             <div class="hud-controls"><button class="btn-hud" onclick="chgStat('calor', -1)">-</button><span class="hud-val" id="disp-calor">1</span><button class="btn-hud" onclick="chgStat('calor', 1)">+</button></div>
         </div>
         <div class="control-group" style="margin-top: 8px;">
-            <label>🟦 Usos</label>
+            <label id="ctrl-usos-label">🟦 Tiros por ativação</label>
             <div class="hud-controls"><button class="btn-hud" onclick="chgStat('usos', -1)">-</button><span class="hud-val" id="disp-usos">2</span><button class="btn-hud" onclick="chgStat('usos', 1)">+</button></div>
         </div>
         <div class="control-group" style="margin-top: 8px;">
@@ -108,27 +108,26 @@
             <label style="display: block; margin-bottom: 5px;">🎯 Tabela de Mira</label>
 
             <div class="hud-controls" style="margin-bottom: 5px;">
-                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">0 hex</span>
-                <button class="btn-hud" onclick="chgMira('hex0', -1)">-</button><span class="hud-val" id="disp-hex0">X</span><button class="btn-hud" onclick="chgMira('hex0', 1)">+</button>
-                <button class="btn-hud btn-x" onclick="setMiraX('hex0')">X</button>
+                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">1 hex</span>
+                <button class="btn-hud" onclick="chgMira('hex1', -1)">-</button><span class="hud-val" id="disp-hex1">X</span><button class="btn-hud" onclick="chgMira('hex1', 1)">+</button>
+                <button class="btn-hud btn-x" onclick="setMiraX('hex1')">X</button>
             </div>
 
             <div class="hud-controls" style="margin-bottom: 5px;">
-                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">1-2 hex</span>
-                <button class="btn-hud" onclick="chgMira('hex1', -1)">-</button><span class="hud-val" id="disp-hex1">X</span><button class="btn-hud" onclick="chgMira('hex1', 1)">+</button>
-                <button class="btn-hud btn-x" onclick="setMiraX('hex1')">X</button>
+                <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">2 hex</span>
+                <button class="btn-hud" onclick="chgMira('hex2', -1)">-</button><span class="hud-val" id="disp-hex2">X</span><button class="btn-hud" onclick="chgMira('hex2', 1)">+</button>
+                <button class="btn-hud btn-x" onclick="setMiraX('hex2')">X</button>
             </div>
 
             <div class="control-group" style="margin-top: 10px;">
                 <select id="ctrl-range3" style="margin-bottom: 5px; width: 100%;">
                     <option value="3+ hex">3+ hex</option>
-                    <option value="3-4 hex">3-4 hex</option>
-                    <option value="3-5 hex">3-5 hex</option>
+                    <option value="3–5 hex">3–5 hex</option>
                 </select>
                 <div class="hud-controls">
                     <span style="font-size: 11px; width: 45px; color: #8b949e; font-weight: bold;">Longo</span>
-                    <button class="btn-hud" onclick="chgMira('hex3', -1)">-</button><span class="hud-val" id="disp-hex3">X</span><button class="btn-hud" onclick="chgMira('hex3', 1)">+</button>
-                    <button class="btn-hud btn-x" onclick="setMiraX('hex3')">X</button>
+                    <button class="btn-hud" onclick="chgMira('longo', -1)">-</button><span class="hud-val" id="disp-longo">X</span><button class="btn-hud" onclick="chgMira('longo', 1)">+</button>
+                    <button class="btn-hud btn-x" onclick="setMiraX('longo')">X</button>
                 </div>
             </div>
         </div>
@@ -147,14 +146,20 @@
         </div>
 
         <div id="panel-simbolos" class="simb-list hide">
-            <div class="simb-row"><span class="simb-icon">⚡ Energia</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('raio', -1)">-</button><span class="hud-val" id="simb-raio">0</span><button class="btn-hud" onclick="chgSimb('raio', 1)">+</button></div></div>
-            <div class="simb-row"><span class="simb-icon">🔋 Bateria</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('pilha', -1)">-</button><span class="hud-val" id="simb-pilha">0</span><button class="btn-hud" onclick="chgSimb('pilha', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">⚡ Energia gerada por turno</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('raio', -1)">-</button><span class="hud-val" id="simb-raio">0</span><button class="btn-hud" onclick="chgSimb('raio', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔋 Capacidade da bateria</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('pilha', -1)">-</button><span class="hud-val" id="simb-pilha">0</span><button class="btn-hud" onclick="chgSimb('pilha', 1)">+</button></div></div>
             <div class="simb-row"><span class="simb-icon">💖 Casco</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('coracao', -1)">-</button><span class="hud-val" id="simb-coracao">0</span><button class="btn-hud" onclick="chgSimb('coracao', 1)">+</button></div></div>
             <div class="simb-row"><span class="simb-icon">🛡️ Escudo</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('escudo', -1)">-</button><span class="hud-val" id="simb-escudo">0</span><button class="btn-hud" onclick="chgSimb('escudo', 1)">+</button></div></div>
-            <div class="simb-row"><span class="simb-icon">🔼 Movimento</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('seta', -1)">-</button><span class="hud-val" id="simb-seta">0</span><button class="btn-hud" onclick="chgSimb('seta', 1)">+</button></div></div>
+            <div class="simb-row"><span class="simb-icon">🔼 Pontos de movimento</span><div class="hud-controls"><button class="btn-hud" onclick="chgSimb('seta', -1)">-</button><span class="hud-val" id="simb-seta">0</span><button class="btn-hud" onclick="chgSimb('seta', 1)">+</button></div></div>
         </div>
 
-        <button id="btn-export-png" class="btn-export">📷 Salvar PNG</button>
+        <div class="export-controls">
+            <label class="checkbox-group print-option" for="ctrl-print-economy">
+                <input type="checkbox" id="ctrl-print-economy">
+                Impressão econômica (P&B)
+            </label>
+            <button type="button" id="btn-export-png" class="btn-export">📷 Salvar PNG</button>
+        </div>
     </div>
 </div>
 

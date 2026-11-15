@@ -5,6 +5,7 @@ const tiposGerais = ['arma', 'suporte', 'propulsao', 'especial'];
 const coresTipo = { arma: '#f85149', suporte: '#60a5fa', propulsao: '#22c55e', especial: '#a855f7' };
 const coresRaridade = { comum: '#484f58', incomum: '#38bdf8', raro: '#a855f7', unico: '#4ade80' };
 const iconesTipo = { arma: '🔴', suporte: '🔵', propulsao: '🟢', especial: '🟣' };
+const nomesTipo = { arma: 'Arma', suporte: 'Suporte', propulsao: 'Propulsão', especial: 'Especial' };
 const dicionarioSimbolos = { raio: '⚡', pilha: '🔋', coracao: '💖', escudo: '🛡️', seta: '🔼' };
 
 let state = {
@@ -12,7 +13,7 @@ let state = {
     peso: 0, energia: 1, usos: 2, calor: 1, dano: 0,
     nome: 'NOME DA CARTA', arte: 'ARTE DA ARMA',
     arestas: [0, 1, 5], modo_inf: 'mira',
-    mira: { hex0: 0, hex1: 0, hex3: 'X', hex3_label: '3+ hex' },
+    mira: { hex1: 0, hex2: 0, longo: 'X', longoLabel: '3+ hex' },
     desc: 'Descrição da carta aqui...',
     simbolos: { raio: 0, pilha: 0, coracao: 0, escudo: 0, seta: 0 }
 };
@@ -28,7 +29,7 @@ function ligarEventosHUD() {
     document.getElementById('ctrl-ato').addEventListener('change', (e) => { state.ato = parseInt(e.target.value); renderizarCarta(); });
     document.getElementById('ctrl-upgraded').addEventListener('change', (e) => { state.upgraded = e.target.checked; renderizarCarta(); });
 
-    document.getElementById('ctrl-range3').addEventListener('change', (e) => { state.mira.hex3_label = e.target.value; renderizarCarta(); });
+    document.getElementById('ctrl-range3').addEventListener('change', (e) => { state.mira.longoLabel = e.target.value; renderizarCarta(); });
 
     document.getElementById('ctrl-modo-inf').addEventListener('change', (e) => {
         state.modo_inf = e.target.value;
@@ -37,6 +38,7 @@ function ligarEventosHUD() {
         renderizarCarta();
     });
 
+    document.getElementById('ctrl-print-economy').addEventListener('change', renderizarCarta);
     document.getElementById('btn-export-png').addEventListener('click', exportarCartaPNG);
 }
 
@@ -86,7 +88,10 @@ window.toggleEdge = function(edgeIdx) {
 
 function renderizarCarta() {
     const card = document.getElementById('card-preview');
-    state.upgraded ? card.classList.add('upgraded') : card.classList.remove('upgraded');
+    const impressaoEconomica = document.getElementById('ctrl-print-economy').checked;
+    const isArma = state.tipo === 'arma';
+    card.classList.toggle('upgraded', state.upgraded);
+    card.classList.toggle('print-economy', impressaoEconomica);
 
     if (document.activeElement.id !== 'out-nome') document.getElementById('out-nome').innerText = state.nome;
     if (document.activeElement.id !== 'out-desc') document.getElementById('out-desc').innerText = state.desc;
@@ -101,28 +106,35 @@ function renderizarCarta() {
     });
 
     document.getElementById('disp-usos').innerText = state.usos;
+    document.getElementById('ctrl-usos-label').innerText = isArma ? '🟦 Tiros por ativação' : '🟦 Usos';
+    document.getElementById('out-usos-lbl').innerText = isArma ? 'TIROS' : 'USOS';
     document.getElementById('out-usos-slots').innerHTML = '<div class="uses-slot"></div>'.repeat(state.usos);
 
     document.getElementById('disp-peso').innerText = state.peso;
-    document.getElementById('out-peso').innerText = Math.abs(state.peso);
-    document.getElementById('peso-icon').innerText = state.peso >= 0 ? '🏋️' : '🪶';
+    document.getElementById('out-peso').innerText = impressaoEconomica
+        ? (state.peso > 0 ? `+${state.peso}` : state.peso)
+        : Math.abs(state.peso);
+    document.getElementById('peso-icon').innerText = impressaoEconomica ? 'PESO' : (state.peso >= 0 ? '🏋️' : '🪶');
 
     const badge = document.getElementById('out-badge-tipo');
     badge.className = `badge badge-${state.tipo} clickable-icon`;
-    badge.innerText = iconesTipo[state.tipo];
+    badge.innerText = impressaoEconomica ? nomesTipo[state.tipo] : iconesTipo[state.tipo];
+    badge.title = `${nomesTipo[state.tipo]} · Clique para mudar o tipo`;
 
-    const corAtiva = coresTipo[state.tipo] || '#f85149';
+    const corAtiva = impressaoEconomica ? '#161616' : coresTipo[state.tipo];
+    const corInativa = impressaoEconomica ? '#dedede' : 'rgba(255,255,255,0.05)';
+    const fundoHex = impressaoEconomica ? '#ffffff' : '#0d1117';
+    const contornoHex = impressaoEconomica ? '#6a6a6a' : '#484f58';
     let linhasHTML = '';
-    const corLinha = coresRaridade[state.raridade] || '#484f58';
     for (let i = 0; i < state.ato; i++) {
-        linhasHTML += `<div class="bg-line" style="background-color: ${corLinha};"></div>`;
+        linhasHTML += `<div class="bg-line"></div>`;
     }
 
     let svgLines = '';
     for(let i=0; i<6; i++) {
         const isActive = state.arestas.includes(i);
-        const color = isActive ? corAtiva : 'rgba(255,255,255,0.05)';
-        const width = isActive ? 6 : 14;
+        const color = isActive ? corAtiva : corInativa;
+        const width = isActive ? 6 : (impressaoEconomica ? 3 : 14);
         const p1 = verticesHex[i];
         const p2 = verticesHex[(i + 1) % 6];
         svgLines += `<line class="hex-edge" x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" 
@@ -130,15 +142,17 @@ function renderizarCarta() {
     }
 
     document.getElementById('out-svg-container').innerHTML = `
-        <div class="bg-lines-container">${linhasHTML}</div>
+        <div class="bg-lines-container" data-rarity="${state.raridade}" style="color: ${coresRaridade[state.raridade]};">${linhasHTML}</div>
         <svg class="hex-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-            <polygon points="27.5,11 72.5,11 95,50 72.5,89 27.5,89 5,50" fill="#0d1117" stroke="#484f58" stroke-width="2"/>
+            <polygon points="27.5,11 72.5,11 95,50 72.5,89 27.5,89 5,50" fill="${fundoHex}" stroke="${contornoHex}" stroke-width="2"/>
             ${svgLines}
         </svg>
-        <div class="art-text editable-text" id="out-arte-text" contenteditable="true">${state.arte.replace(/\n/g, '<br>')}</div>
+        <div class="art-text editable-text" id="out-arte-text" contenteditable="true"></div>
     `;
 
-    document.getElementById('out-arte-text').addEventListener('blur', (e) => state.arte = e.target.innerText.trim());
+    const arte = document.getElementById('out-arte-text');
+    arte.textContent = state.arte;
+    arte.addEventListener('blur', (e) => state.arte = e.target.innerText.trim());
 
     document.getElementById('out-box-energia').classList.toggle('val-0', state.energia === 0);
     document.getElementById('out-box-calor').classList.toggle('val-0', state.calor === 0);
@@ -154,18 +168,20 @@ function renderizarCarta() {
     if (state.modo_inf === 'mira') {
         document.getElementById('out-tabela').classList.remove('hide');
         document.getElementById('ctrl-mira-panel').classList.remove('hide');
-        document.getElementById('out-hex3-label').innerText = state.mira.hex3_label;
-        document.getElementById('ctrl-range3').value = state.mira.hex3_label;
+        document.getElementById('out-longo-label').innerText = state.mira.longoLabel;
+        document.getElementById('ctrl-range3').value = state.mira.longoLabel;
 
-        ['0','1','3'].forEach(hex => {
-            const val = state.mira[`hex${hex}`];
-            document.getElementById(`disp-hex${hex}`).innerText = val;
-            const el = document.getElementById(`out-hex${hex}`);
-            el.innerText = val;
+        ['hex1', 'hex2', 'longo'].forEach(faixa => {
+            const val = state.mira[faixa];
+            const texto = val > 0 ? `+${val}` : val;
+            document.getElementById(`disp-${faixa}`).innerText = texto;
+            const el = document.getElementById(`out-${faixa}`);
+            el.innerText = texto;
 
-            if (val === 'X' || (typeof val === 'number' && val < 0)) el.className = 'cell-bot val-miss'; // Vermelho
-            else if (val === 0) el.className = 'cell-bot val-neutral'; // Branco
-            else el.className = 'cell-bot val-hit'; // Verde
+            if (val === 'X') el.className = 'cell-bot val-miss';
+            else if (val < 0) el.className = 'cell-bot val-penalty';
+            else if (val === 0) el.className = 'cell-bot val-neutral';
+            else el.className = 'cell-bot val-hit';
         });
     }
     else if (state.modo_inf === 'texto') {
@@ -180,13 +196,11 @@ function renderizarCarta() {
             document.getElementById(`simb-${id}`).innerText = state.simbolos[id];
         });
 
-        let simbStr = '';
-        Object.keys(dicionarioSimbolos).forEach(id => {
-            if (state.simbolos[id] > 0) {
-                if (simbStr !== '') simbStr += ' ';
-                simbStr += (state.simbolos[id] <= 3) ? dicionarioSimbolos[id].repeat(state.simbolos[id]) : `${dicionarioSimbolos[id]} ${state.simbolos[id]}`;
-            }
-        });
+        const simbolosAtivos = Object.entries(state.simbolos).filter(([, valor]) => valor > 0);
+        const simbStr = simbolosAtivos.map(([id, valor]) => {
+            const icone = dicionarioSimbolos[id];
+            return valor <= 3 ? icone.repeat(valor) : `${icone} ${valor}`;
+        }).join(' ');
         simbBox.innerText = simbStr || 'Vazio';
 
         const strLen = Array.from(simbStr).length;
@@ -199,12 +213,19 @@ function renderizarCarta() {
 
 async function exportarCartaPNG() {
     const cardElement = document.getElementById('card-preview');
+    const exportButton = document.getElementById('btn-export-png');
+    const printToggle = document.getElementById('ctrl-print-economy');
+    if (exportButton.disabled) return;
+
+    document.activeElement?.blur();
     const nomeFormatado = state.nome.toLowerCase().replace(/\s+/g, '_') || 'modulo';
     const sufixo = state.upgraded ? '-u' : '';
-    const nomeArquivo = `${nomeFormatado}${sufixo}.png`;
+    const sufixoImpressao = printToggle.checked ? '-pb' : '';
+    const nomeArquivo = `${nomeFormatado}${sufixo}${sufixoImpressao}.png`;
 
+    exportButton.disabled = true;
+    printToggle.disabled = true;
     cardElement.classList.add('export-mode');
-    await new Promise(r => setTimeout(r, 100));
 
     try {
         const canvas = await html2canvas(cardElement, { scale: 3, backgroundColor: null, useCORS: true });
@@ -217,5 +238,7 @@ async function exportarCartaPNG() {
         alert("❌ Ocorreu um erro ao exportar a imagem da carta.");
     } finally {
         cardElement.classList.remove('export-mode');
+        exportButton.disabled = false;
+        printToggle.disabled = false;
     }
 }

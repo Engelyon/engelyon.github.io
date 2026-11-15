@@ -110,7 +110,13 @@
     </div>
   </div>
 
-  <button id="btn-export-png" class="btn-export">📷 Exportar PNG</button>
+  <div class="export-controls">
+    <label class="print-option" for="ctrl-print-economy">
+      <input type="checkbox" id="ctrl-print-economy">
+      Impressão econômica (P&B)
+    </label>
+    <button id="btn-export-png" class="btn-export" type="button">📷 Exportar PNG</button>
+  </div>
 </div>
 
 <div class="preview-area">
@@ -131,7 +137,7 @@
     <div class="right-panel">
       <div class="enemy-header">
         <div class="enemy-type" contenteditable="true" spellcheck="false">Mecânico / Caça</div>
-        <div class="enemy-rank">Rank <span contenteditable="true" spellcheck="false">1</span></div>
+        <div class="enemy-rank"><span class="print-elite-label">Elite · </span>Rank <span contenteditable="true" spellcheck="false">1</span></div>
       </div>
 
       <div class="actions-container">
