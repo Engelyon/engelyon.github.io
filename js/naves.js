@@ -203,6 +203,13 @@ async function exportarPNG() {
             onclone: (_, clonedGrid) => {
                 clonedGrid.classList.add('export-mode');
                 Object.assign(clonedGrid.style, { position: 'absolute', top: '0', left: '0' });
+                const hull = clonedGrid.querySelector('#hull-svg');
+                const { offsetWidth: width, offsetHeight: height } = clonedGrid;
+                // O SVG precisa do tamanho inteiro do casco ao ser rasterizado.
+                hull.setAttribute('width', width);
+                hull.setAttribute('height', height);
+                hull.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                Object.assign(hull.style, { width: `${width}px`, height: `${height}px` });
             }
         });
         const link = document.createElement('a');

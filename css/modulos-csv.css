@@ -1,0 +1,46 @@
+[data-module-batch] {
+    display: grid;
+    grid-template-columns: minmax(275px, 345px) minmax(0, 1fr);
+    height: 100dvh;
+}
+
+.batch-controls {
+    overflow-y: auto;
+    padding: 22px;
+    background: #161b22;
+    border-right: 1px solid #30363d;
+}
+
+.batch-back { color: #8dc9ff; font-weight: 700; text-decoration: none; }
+.batch-back:hover { text-decoration: underline; }
+.batch-controls h1 { margin: 14px 0 10px; font-size: 23px; color: #f0f6fc; }
+.batch-controls p { color: #bbc7d4; font-size: 14px; line-height: 1.4; }
+.batch-field { display: block; margin: 16px 0 5px; color: #c9d1d9; }
+.batch-controls :is(select, input[type="file"], progress, .btn-export) { width: 100%; }
+.batch-controls input[type="file"] { color: #e6edf3; font-size: 13px; }
+.batch-controls .print-option { display: flex; align-items: center; margin: 15px 0; }
+.batch-controls progress { margin-top: 10px; }
+.batch-controls :focus-visible { outline: 2px solid #8dc9ff; outline-offset: 2px; }
+#batch-status { margin-top: 10px; }
+#batch-status[data-kind="error"], #batch-issues { color: #ffb3ad; }
+#batch-issues { margin-top: 10px; font-size: 13px; }
+#batch-issues summary { cursor: pointer; font-weight: 700; }
+#batch-issues ul { margin: 6px 0 0 18px; overflow-wrap: anywhere; }
+
+.batch-preview {
+    display: grid;
+    place-items: safe center;
+    overflow: auto;
+    padding: 20px;
+    background-image: radial-gradient(#30363d 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+[data-module-batch] .desc-box { white-space: pre-wrap; }
+[data-module-batch] .card .val-0 { visibility: hidden; }
+
+@media (max-width: 680px) {
+    [data-module-batch] { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 100dvh; overflow: auto; }
+    .batch-controls { border-right: 0; border-bottom: 1px solid #30363d; }
+    .batch-preview { padding: 10px 0 20px; }
+}

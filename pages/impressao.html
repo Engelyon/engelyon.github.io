@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Imprimir cartas A4 — The First Star: Rebels</title>
+    <link rel="stylesheet" href="../css/impressao.css">
+    <script src="../js/impressao.js" defer></script>
+</head>
+<body>
+    <aside class="controls">
+        <a class="back-link" href="../index.html">← Voltar ao menu</a>
+        <h1>Imprimir cartas A4</h1>
+
+        <fieldset class="upload-group">
+            <legend>Adicionar à impressão</legend>
+            <label class="file-label">Formato
+                <select id="print-format">
+                    <option value="module">Módulo Mini-Euro</option>
+                    <option value="tarot">Missão / inimigo</option>
+                    <option value="hull-2x2">Casco 2×2</option>
+                    <option value="hull-2x1">Casco 2×1</option>
+                    <option value="hull-1x1">Casco 1×1</option>
+                </select>
+            </label>
+            <label class="file-label">Selecionar PNGs
+                <input id="png-picker" class="png-picker" type="file" accept=".png,image/png" multiple>
+            </label>
+            <p id="import-status" class="status" role="status" hidden></p>
+            <ul id="file-list" class="file-list" aria-label="Arquivos selecionados"></ul>
+            <p id="copies-error" class="status" hidden>Informe entre 1 e 99 cópias por arquivo.</p>
+        </fieldset>
+
+        <button id="print-button" type="button" disabled>Imprimir / Salvar como PDF</button>
+        <p class="print-help">No Ctrl+P, escolha <strong>A4</strong>, escala <strong>100%</strong> e margens <strong>Nenhuma</strong>. Desative cabeçalhos e rodapés.</p>
+    </aside>
+
+    <main id="preview" class="preview">
+        <header class="preview-header">
+            <h2>Folhas A4</h2>
+            <p id="sheet-count" aria-live="polite">0 folhas</p>
+        </header>
+        <p id="empty-preview">Escolha o formato e adicione os PNGs. Repita para imprimir formatos diferentes na mesma leva.</p>
+        <div id="sheets" aria-label="Folhas para impressão"></div>
+    </main>
+
+    <template id="file-row">
+        <li class="file-row">
+            <div class="file-info"><div class="file-name"></div><div class="file-format"></div></div>
+            <label class="copies-label">Cópias <input class="copies" type="number" min="1" max="99" step="1" value="1" required></label>
+            <button class="remove-file" type="button">×</button>
+        </li>
+    </template>
+</body>
+</html>

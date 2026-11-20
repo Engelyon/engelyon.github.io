@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Imprimir mapa e tokens — The First Star: Rebels</title>
+    <link rel="stylesheet" href="../css/mapa-tokens.css">
+    <script src="../tokens/catalogo.js" defer></script>
+    <script src="../js/mapa-tokens.js" defer></script>
+</head>
+<body>
+    <aside class="controls">
+        <a href="../index.html">← Voltar ao menu</a>
+        <h1>Mapa e tokens</h1>
+
+        <fieldset>
+            <legend>Mapa · A2 horizontal</legend>
+            <div class="fields">
+                <label>Colunas<input id="columns" type="number" min="5" max="60" step="1" value="25" required></label>
+                <label>Linhas<input id="rows" type="number" min="5" max="60" step="1" value="15" required></label>
+                <label>Limite de 1 jogador<input id="solo-radius" type="number" min="0" step="1" value="3" required></label>
+                <label>Limite de 2 jogadores<input id="duo-radius" type="number" min="1" step="1" value="6" required></label>
+            </div>
+            <p>Os limites contam passos em hexágonos a partir do centro (distância 0). Só o trecho da linha que coincide com a grade é impresso. Para 3–4 jogadores, use todo o mapa.</p>
+            <p id="map-status" class="status" aria-live="polite"></p>
+            <button id="print-map" type="button">Imprimir / salvar mapa A2</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Tokens · A4</legend>
+            <p>Coloque as artes em <code>tokens/</code> e recarregue a página. Os nomes esperados aparecem abaixo.</p>
+            <table class="token-list">
+                <thead><tr><th scope="col">Token</th><th scope="col">Escala</th><th scope="col">Cópias</th></tr></thead>
+                <tbody id="token-rows"></tbody>
+            </table>
+            <p id="token-status" class="status" aria-live="polite"></p>
+            <button id="print-tokens" type="button" disabled>Imprimir / salvar tokens A4</button>
+        </fieldset>
+        <p id="print-status" class="status error" role="status" hidden></p>
+        <p class="print-help">Salve cada opção como PDF. Selecione o papel indicado, escala <strong>100%</strong>, margens <strong>Nenhuma</strong> e desative cabeçalhos e rodapés.</p>
+    </aside>
+
+    <main class="preview">
+        <nav class="preview-switch" aria-label="Prévia para impressão">
+            <button id="show-map" type="button" aria-pressed="true" aria-controls="map-preview">Mapa · A2</button>
+            <button id="show-tokens" type="button" aria-pressed="false" aria-controls="token-preview">Tokens · A4</button>
+        </nav>
+        <section id="map-preview" aria-label="Prévia do mapa"></section>
+        <section id="token-preview" aria-label="Prévia dos tokens" hidden>
+            <p id="empty-tokens">Adicione as artes e preencha a quantidade de cópias para montar a folha.</p>
+            <div id="token-sheets"></div>
+        </section>
+    </main>
+</body>
+</html>

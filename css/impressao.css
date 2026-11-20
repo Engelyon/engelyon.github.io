@@ -1,0 +1,106 @@
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+    margin: 0;
+    color: #dce4ee;
+    background: #0d1117;
+    font: 14px/1.4 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.controls { background: #161b22; padding: 22px; }
+.back-link { color: #8dc9ff; font-weight: 700; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+h1 { color: #f0f6fc; font-size: 22px; margin: 14px 0; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .55; }
+:focus-visible { outline: 2px solid #70c5f8; outline-offset: 2px; }
+
+.upload-group { margin: 0 0 14px; border: 1px solid #3d5067; border-radius: 7px; padding: 10px; min-width: 0; }
+.upload-group legend { padding: 0 5px; color: #ecf3fa; font-weight: 800; }
+.file-label { display: grid; gap: 4px; color: #c4d0df; font-size: 12px; font-weight: 700; }
+.file-label + .file-label { margin-top: 10px; }
+
+input[type="number"], select, .png-picker {
+    min-width: 0; width: 100%; padding: 5px 7px;
+    color: #f0f6fc; background: #0d1117; border: 1px solid #445064; border-radius: 5px;
+}
+input:invalid { border-color: #f08885; }
+.png-picker::file-selector-button {
+    margin-right: 6px; padding: 5px; color: #e6edf3; background: #263648;
+    border: 0; border-radius: 3px; font: inherit; cursor: pointer;
+}
+.file-list { display: grid; gap: 5px; padding: 0; margin: 8px 0 0; list-style: none; }
+.file-list:empty { display: none; }
+.file-row { display: grid; grid-template-columns: minmax(0, 1fr) 46px 27px; align-items: center; gap: 6px; }
+.file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-info { min-width: 0; }
+.file-format { color: #bac9db; font-size: 11px; }
+.copies-label { font-size: 10px; font-weight: 700; color: #c4d0df; }
+.copies-label input { display: block; padding: 3px; }
+.remove-file { align-self: end; height: 29px; color: #ffaaa7; background: #212b38; border: 1px solid #445064; border-radius: 5px; }
+.remove-file:hover { background: #344358; }
+
+#print-button {
+    width: 100%; padding: 10px; color: #071426; background: #91c5ff;
+    border: 1px solid #8dbefa; border-radius: 6px; font-weight: 900;
+}
+#print-button:hover:enabled { background: #b6d9ff; }
+.print-help, .status { margin: 8px 0 0; font-size: 13px; }
+.print-help { color: #c4d0df; }
+.status { color: #ffd1cd; overflow-wrap: anywhere; white-space: pre-line; }
+.status[data-state="loading"] { color: #c4d0df; }
+
+.preview { min-width: 0; padding: 22px; }
+.preview-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.preview-header h2, .preview-header p { margin: 0 0 12px; }
+.preview-header h2 { color: #f0f6fc; font-size: 19px; }
+.preview-header p, #empty-preview { color: #bac9db; }
+#sheets { display: grid; justify-items: center; gap: 20px; }
+
+.sheet {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    background: #fff;
+    overflow: hidden;
+}
+
+.print-card, .print-card img, .crop-marks { position: absolute; }
+.print-card img { display: block; object-fit: contain; inset: 0; }
+.print-card .hull-image { object-fit: fill; }
+.print-card.rotated img { transform-origin: top left; transform: translateX(var(--rotated-width)) rotate(90deg); }
+.crop-marks { inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+@media screen {
+    .preview { background-image: radial-gradient(#273444 1px, transparent 1px); background-size: 20px 20px; }
+    .sheet { zoom: var(--preview-scale, .5); box-shadow: 0 12px 34px #0008; }
+}
+
+@media screen and (min-width: 761px) {
+    body { display: grid; grid-template-columns: 350px minmax(0, 1fr); height: 100dvh; }
+    .controls, .preview { overflow-y: auto; }
+    .controls { border-right: 1px solid #30363d; }
+}
+
+@page { size: A4 portrait; margin: 0; }
+
+@media print {
+    html, body, .preview, #sheets {
+        display: block; width: auto; height: auto; margin: 0; padding: 0;
+        overflow: visible; color: #000; background: #fff;
+    }
+    .controls, .preview-header, #empty-preview { display: none; }
+    body:not(.can-print) #sheets { display: none; }
+    .sheet {
+        /* Folga de arredondamento do navegador para impedir uma página extra. */
+        height: 296.8mm;
+        break-inside: avoid;
+        break-after: page;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    .sheet:last-child { break-after: auto; }
+    .crop-marks { height: 297mm; }
+}

@@ -19,6 +19,7 @@ let state = {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+    if (document.body.hasAttribute('data-module-batch')) return;
     ligarEventosHUD();
     ligarEventosInline();
     renderizarCarta();
@@ -87,6 +88,7 @@ window.toggleEdge = function(edgeIdx) {
 };
 
 function renderizarCarta() {
+    const editorManual = !document.body.hasAttribute('data-module-batch');
     const card = document.getElementById('card-preview');
     const impressaoEconomica = document.getElementById('ctrl-print-economy').checked;
     const isArma = state.tipo === 'arma';
@@ -96,30 +98,26 @@ function renderizarCarta() {
     if (document.activeElement.id !== 'out-nome') document.getElementById('out-nome').innerText = state.nome;
     if (document.activeElement.id !== 'out-desc') document.getElementById('out-desc').innerText = state.desc;
 
-    document.getElementById('ctrl-raridade').value = state.raridade;
-    document.getElementById('ctrl-ato').value = state.ato;
-    document.getElementById('ctrl-modo-inf').value = state.modo_inf;
-
     ['energia', 'calor', 'dano'].forEach(p => {
-        document.getElementById(`disp-${p}`).innerText = state[p];
         document.getElementById(`out-${p}`).innerText = state[p];
     });
 
-    document.getElementById('disp-usos').innerText = state.usos;
-    document.getElementById('ctrl-usos-label').innerText = isArma ? '🟦 Tiros por ativação' : '🟦 Usos';
     document.getElementById('out-usos-lbl').innerText = isArma ? 'TIROS' : 'USOS';
     document.getElementById('out-usos-slots').innerHTML = '<div class="uses-slot"></div>'.repeat(state.usos);
 
-    document.getElementById('disp-peso').innerText = state.peso;
     document.getElementById('out-peso').innerText = impressaoEconomica
         ? (state.peso > 0 ? `+${state.peso}` : state.peso)
         : Math.abs(state.peso);
     document.getElementById('peso-icon').innerText = impressaoEconomica ? 'PESO' : (state.peso >= 0 ? '🏋️' : '🪶');
 
     const badge = document.getElementById('out-badge-tipo');
-    badge.className = `badge badge-${state.tipo} clickable-icon`;
+    badge.className = `badge badge-${state.tipo}`;
     badge.innerText = impressaoEconomica ? nomesTipo[state.tipo] : iconesTipo[state.tipo];
-    badge.title = `${nomesTipo[state.tipo]} · Clique para mudar o tipo`;
+    badge.title = nomesTipo[state.tipo];
+    if (editorManual) {
+        badge.classList.add('clickable-icon');
+        badge.title += ' · Clique para mudar o tipo';
+    }
 
     const corAtiva = impressaoEconomica ? '#161616' : coresTipo[state.tipo];
     const corInativa = impressaoEconomica ? '#dedede' : 'rgba(255,255,255,0.05)';
@@ -137,8 +135,9 @@ function renderizarCarta() {
         const width = isActive ? 6 : (impressaoEconomica ? 3 : 14);
         const p1 = verticesHex[i];
         const p2 = verticesHex[(i + 1) % 6];
-        svgLines += `<line class="hex-edge" x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" 
-                      stroke="${color}" stroke-width="${width}" stroke-linecap="round" onclick="toggleEdge(${i})"/>`;
+        const interaction = editorManual ? `class="hex-edge" onclick="toggleEdge(${i})"` : '';
+        svgLines += `<line ${interaction} x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}"
+                      stroke="${color}" stroke-width="${width}" stroke-linecap="round"/>`;
     }
 
     document.getElementById('out-svg-container').innerHTML = `
@@ -147,12 +146,15 @@ function renderizarCarta() {
             <polygon points="27.5,11 72.5,11 95,50 72.5,89 27.5,89 5,50" fill="${fundoHex}" stroke="${contornoHex}" stroke-width="2"/>
             ${svgLines}
         </svg>
-        <div class="art-text editable-text" id="out-arte-text" contenteditable="true"></div>
+        ${editorManual ? '<div class="art-text editable-text" id="out-arte-text" contenteditable="true"></div>' : ''}
     `;
 
-    const arte = document.getElementById('out-arte-text');
-    arte.textContent = state.arte;
-    arte.addEventListener('blur', (e) => state.arte = e.target.innerText.trim());
+    if (editorManual) {
+        const arte = document.getElementById('out-arte-text');
+        arte.textContent = state.arte;
+        arte.addEventListener('blur', (e) => state.arte = e.target.innerText.trim());
+        sincronizarControles();
+    }
 
     document.getElementById('out-box-energia').classList.toggle('val-0', state.energia === 0);
     document.getElementById('out-box-calor').classList.toggle('val-0', state.calor === 0);
@@ -163,20 +165,15 @@ function renderizarCarta() {
     document.getElementById('out-tabela').classList.add('hide');
     document.getElementById('out-desc').classList.add('hide');
     document.getElementById('out-simbolos').classList.add('hide');
-    document.getElementById('ctrl-mira-panel').classList.add('hide');
 
     if (state.modo_inf === 'mira') {
         document.getElementById('out-tabela').classList.remove('hide');
-        document.getElementById('ctrl-mira-panel').classList.remove('hide');
         document.getElementById('out-longo-label').innerText = state.mira.longoLabel;
-        document.getElementById('ctrl-range3').value = state.mira.longoLabel;
 
         ['hex1', 'hex2', 'longo'].forEach(faixa => {
             const val = state.mira[faixa];
-            const texto = val > 0 ? `+${val}` : val;
-            document.getElementById(`disp-${faixa}`).innerText = texto;
             const el = document.getElementById(`out-${faixa}`);
-            el.innerText = texto;
+            el.innerText = formatarMira(val);
 
             if (val === 'X') el.className = 'cell-bot val-miss';
             else if (val < 0) el.className = 'cell-bot val-penalty';
@@ -191,13 +188,8 @@ function renderizarCarta() {
         const simbBox = document.getElementById('out-simbolos');
         simbBox.classList.remove('hide');
 
-        // Atualiza a visualização do HUD!
-        Object.keys(dicionarioSimbolos).forEach(id => {
-            document.getElementById(`simb-${id}`).innerText = state.simbolos[id];
-        });
-
         const simbolosAtivos = Object.entries(state.simbolos).filter(([, valor]) => valor > 0);
-        const simbStr = simbolosAtivos.map(([id, valor]) => {
+        const simbStr = state.simbolosTexto ?? simbolosAtivos.map(([id, valor]) => {
             const icone = dicionarioSimbolos[id];
             return valor <= 3 ? icone.repeat(valor) : `${icone} ${valor}`;
         }).join(' ');
@@ -208,6 +200,33 @@ function renderizarCarta() {
         else if (strLen < 12) simbBox.style.fontSize = '26px';
         else if (strLen < 18) simbBox.style.fontSize = '20px';
         else simbBox.style.fontSize = '16px';
+    }
+}
+
+function formatarMira(valor) {
+    return valor > 0 ? `+${valor}` : valor;
+}
+
+function sincronizarControles() {
+    document.getElementById('ctrl-raridade').value = state.raridade;
+    document.getElementById('ctrl-ato').value = state.ato;
+    document.getElementById('ctrl-modo-inf').value = state.modo_inf;
+    document.getElementById('ctrl-usos-label').innerText = state.tipo === 'arma' ? '🟦 Tiros por ativação' : '🟦 Usos';
+    ['energia', 'calor', 'dano', 'usos', 'peso'].forEach(prop => {
+        document.getElementById(`disp-${prop}`).innerText = state[prop];
+    });
+
+    document.getElementById('ctrl-mira-panel').classList.toggle('hide', state.modo_inf !== 'mira');
+    if (state.modo_inf === 'mira') {
+        document.getElementById('ctrl-range3').value = state.mira.longoLabel;
+        ['hex1', 'hex2', 'longo'].forEach(faixa => {
+            document.getElementById(`disp-${faixa}`).innerText = formatarMira(state.mira[faixa]);
+        });
+    }
+    if (state.modo_inf === 'simbolos') {
+        Object.keys(dicionarioSimbolos).forEach(id => {
+            document.getElementById(`simb-${id}`).innerText = state.simbolos[id];
+        });
     }
 }
 

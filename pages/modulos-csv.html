@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Módulos por CSV — The First Star: Rebels</title>
+    <link rel="stylesheet" href="../css/cardmaker_2.css">
+    <link rel="stylesheet" href="../css/modulos-csv.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="../js/vendor/jszip.min.js" defer></script>
+    <script src="../js/cardmaker_2.js" defer></script>
+    <script src="../js/modulos-csv.js" defer></script>
+</head>
+<body data-module-batch>
+    <aside class="batch-controls">
+        <a class="batch-back" href="../index.html">← Voltar ao menu</a>
+        <h1>Módulos por CSV</h1>
+        <p>Importe o CSV com os blocos Arma, Utilitário, Gerador e Propulsor. As cartas saem no Ato 1.</p>
+        <label class="batch-field" for="csv-file">Arquivo CSV</label>
+        <input id="csv-file" type="file" accept=".csv,text/csv">
+        <label class="batch-field" for="batch-card">Carta na prévia</label>
+        <select id="batch-card" disabled><option>Selecione o CSV</option></select>
+        <label class="print-option" for="ctrl-print-economy">
+            <input type="checkbox" id="ctrl-print-economy">
+            Impressão econômica (P&B)
+        </label>
+        <button id="batch-export" class="btn-export" type="button" disabled>Baixar ZIP com os PNGs</button>
+        <progress id="batch-progress" hidden></progress>
+        <p id="batch-status" role="status" hidden></p>
+        <details id="batch-issues" hidden><summary>Linhas para revisar</summary><ul></ul></details>
+    </aside>
+    <main class="batch-preview">
+        <p id="batch-empty">Selecione um CSV para ver a prévia das cartas.</p>
+        <div id="batch-card-container" hidden>
+            <div class="card" id="card-preview">
+                <div class="top-bar">
+                    <div class="badge energy" id="out-box-energia">⚡ <span id="out-energia">1</span></div>
+
+                    <div class="weight-display" id="out-box-peso">
+                        <span id="peso-icon">🏋️</span>
+                        <span id="out-peso">0</span>
+                    </div>
+
+                    <div class="badge badge-arma" id="out-badge-tipo">🔴</div>
+                </div>
+
+                <div class="art-container" id="out-svg-container"></div>
+
+                <div class="status-row" id="out-status-row">
+                    <div class="stat-box dmg-box" id="out-box-dano">
+                        <div class="dmg-val">💥 <span id="out-dano">2</span></div>
+                        <div class="dmg-lbl">DANO</div>
+                    </div>
+                    <div class="uses-track" id="out-box-usos">
+                        <div class="uses-lbl" id="out-usos-lbl">TIROS</div>
+                        <div class="uses-slots" id="out-usos-slots"></div>
+                    </div>
+                    <div class="stat-box heat-gen-box" id="out-box-calor">
+                        <div class="heat-gen-val">🔥 <span id="out-calor">1</span></div>
+                        <div class="heat-gen-lbl">CALOR MÁX.</div>
+                    </div>
+                </div>
+
+                <div class="name-plate" id="out-nome">NOME DA CARTA</div>
+
+                <div class="range-table hide" id="out-tabela">
+                    <div class="range-grid">
+                        <div class="grid-cell"><div class="cell-top">1 hex</div><div class="cell-bot" id="out-hex1">-</div></div>
+                        <div class="grid-cell"><div class="cell-top">2 hex</div><div class="cell-bot" id="out-hex2">-</div></div>
+                        <div class="grid-cell"><div class="cell-top" id="out-longo-label">3+ hex</div><div class="cell-bot" id="out-longo">-</div></div>
+                    </div>
+                </div>
+
+                <div class="desc-box hide" id="out-desc">Descrição</div>
+                <div class="simbolos-box hide" id="out-simbolos"></div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
